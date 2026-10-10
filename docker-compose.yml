@@ -1,0 +1,29 @@
+name: cmr-sign
+
+services:
+  datastore:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: cmrsign
+      POSTGRES_USER: cmrsign
+      POSTGRES_PASSWORD: cmrsign
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmrsign -d cmrsign"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - datastore-data:/var/lib/postgresql/data
+
+  service:
+    build: .
+    environment:
+      PORT: "8080"
+    depends_on:
+      datastore:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+volumes:
+  datastore-data:
