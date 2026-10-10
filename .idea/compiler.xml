@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="21">
+      <module name="cmr-sign" target="25" />
+      <module name="cmr-sign.main" target="25" />
+      <module name="cmr-sign.test" target="25" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
