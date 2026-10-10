@@ -1,7 +1,7 @@
 name: cmr-sign
 
 services:
-  datastore:
+  db:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: cmrsign
@@ -12,23 +12,26 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    ports:
+      - "127.0.0.1:5442:5432"
     volumes:
-      - datastore-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
 
   service:
     build: .
     environment:
       ENV: "dev"
       PORT: "8080"
-      DB_URL: "jdbc:postgresql://datastore:5432/cmrsign"
+      DB_URL: "jdbc:postgresql://db:5432/cmrsign"
       DB_USER: "cmrsign"
       DB_PASS: "cmrsign"
       PLATFORM_API_KEY: ${PLATFORM_API_KEY:?set PLATFORM_API_KEY (see .env.example)}
     depends_on:
-      datastore:
+      db:
         condition: service_healthy
     ports:
       - "8080:8080"
 
 volumes:
-  datastore-data:
+  db-data:

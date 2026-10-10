@@ -1,11 +1,11 @@
 package io.github.areiljan.cmrsign.service
 
+import io.github.areiljan.cmrsign.service.db.initDB
+import io.github.areiljan.cmrsign.service.envelopes.EnvelopeRoutes
 import klite.Config
 import klite.Server
+import klite.annotations.annotated
 import klite.isProd
-import klite.jdbc.DBModule
-import klite.jdbc.DBMigrator
-import klite.jdbc.PooledDataSource
 import klite.jdbc.RequestTransactionHandler
 import klite.json.JsonBody
 
@@ -14,12 +14,12 @@ fun main() {
     Config.required("PLATFORM_API_KEY")
 
     Server().apply {
-        use(DBMigrator())
-        use(DBModule(PooledDataSource()))
+        initDB()
         use<RequestTransactionHandler>()
         use<JsonBody>()
 
         context("/health") { get { "ok" } }
+        context("/api") { annotated<EnvelopeRoutes>("/envelopes") }
 
         start()
     }
