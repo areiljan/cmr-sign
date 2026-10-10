@@ -18,7 +18,12 @@ services:
   service:
     build: .
     environment:
+      ENV: "dev"
       PORT: "8080"
+      DB_URL: "jdbc:postgresql://datastore:5432/cmrsign"
+      DB_USER: "cmrsign"
+      DB_PASS: "cmrsign"
+      PLATFORM_API_KEY: ${PLATFORM_API_KEY:?set PLATFORM_API_KEY (see .env.example)}
     depends_on:
       datastore:
         condition: service_healthy
