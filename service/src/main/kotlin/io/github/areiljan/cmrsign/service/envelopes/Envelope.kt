@@ -1,23 +1,25 @@
 package io.github.areiljan.cmrsign.service.envelopes
 
+import io.github.areiljan.cmrsign.Envelope as DomainEnvelope
+import io.github.areiljan.cmrsign.EnvelopeState
+import io.github.areiljan.cmrsign.Id
 import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
 import io.github.areiljan.cmrsign.service.db.Entity
-import io.github.areiljan.cmrsign.service.db.Id
 
 data class Envelope(
     val format: SignatureFormat,
     val signerClass: SignerClass,
-    val state: State = State.CREATED,
-    override val id: Id<Envelope> = Id('E'),
-): Entity<Envelope> {
-    enum class State { CREATED }
-}
+    val state: EnvelopeState = EnvelopeState.CREATED,
+    override val id: Id<DomainEnvelope> = Id('E'),
+): Entity<DomainEnvelope>
+
+fun Envelope.toDomain() = DomainEnvelope(format, signerClass, state, id)
 
 data class Document(
-    val envelopeId: Id<Envelope>,
+    val envelopeId: Id<DomainEnvelope>,
     val version: Int,
     val contentType: MediaType,
     val sha256: Sha256,

@@ -2,10 +2,10 @@ package io.github.areiljan.cmrsign.service.envelopes
 
 import ch.tutteli.atrium.api.fluent.en_GB.toContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
 import io.github.areiljan.cmrsign.service.db.DBTest
-import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 
 class EnvelopeRepositoryTest : DBTest() {

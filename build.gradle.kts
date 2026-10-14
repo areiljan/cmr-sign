@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.4.20" apply false
     java
+    kotlin("jvm") version "2.4.21"
 }
 
 tasks.test {
@@ -12,4 +12,13 @@ tasks.test {
             classpath += sub.the<SourceSetContainer>()["test"].runtimeClasspath
         }
     }
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    testImplementation(kotlin("test"))
+}
+kotlin {
+    jvmToolchain(25)
 }
