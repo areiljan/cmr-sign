@@ -19,6 +19,16 @@ class DssPadesValidatorTest {
         assertEquals(Qualification.NA, verdict.qualification)
     }
 
+    @Test
+    fun `reports who signed`() {
+        val certificate = signerCertificate()
+
+        val verdict = DssPadesValidator(listOf(certificate))
+            .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
+
+        assertEquals(certificate.subjectX500Principal.name, verdict.signer.subjectName)
+    }
+
     private fun signerCertificate(): X509Certificate =
         resource("/signer-cert.pem").use {
             CertificateFactory.getInstance("X.509").generateCertificate(it) as X509Certificate

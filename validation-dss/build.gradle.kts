@@ -18,6 +18,8 @@ dependencies {
     implementation("eu.europa.ec.joinup.sd-dss:dss-validation")
     implementation("eu.europa.ec.joinup.sd-dss:dss-pades")
     implementation("eu.europa.ec.joinup.sd-dss:dss-pades-pdfbox")
+    implementation("eu.europa.ec.joinup.sd-dss:dss-policy-jaxb")
+    implementation("eu.europa.ec.joinup.sd-dss:dss-cms-object")
     implementation("eu.europa.ec.joinup.sd-dss:dss-utils-apache-commons")
 
     testImplementation(testFixtures(project(":core")))
