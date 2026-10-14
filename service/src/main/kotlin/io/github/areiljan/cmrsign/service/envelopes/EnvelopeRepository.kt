@@ -9,6 +9,7 @@ import java.sql.ResultSet
 import javax.sql.DataSource
 
 class EnvelopeRepository(db: DataSource): CrudRepository<Envelope, DomainEnvelope>(db, "envelopes") {
+    // TODO: think of an easier solution and get rid of the mapper and persister here
     override fun ResultSet.mapper() =
         create(Envelope::class, Envelope::state to envelopeState(getString("state")))
 
