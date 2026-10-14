@@ -1,6 +1,7 @@
-.idea/
 *.iml
 build/
 .gradle/
 .kotlin/
 .env
+service/ui/build
+service/ui/node_modules
