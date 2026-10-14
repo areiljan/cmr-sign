@@ -5,3 +5,4 @@ build/
 .env
 service/ui/build
 service/ui/node_modules
+.idea/libraries
