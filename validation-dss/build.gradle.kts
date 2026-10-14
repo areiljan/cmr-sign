@@ -14,7 +14,7 @@ kotlin {
 dependencies {
     implementation(project(":core"))
 
-    implementation(platform("eu.europa.ec.joinup.sd-dss:dss-bom:6.5"))
+    implementation(platform("eu.europa.ec.joinup.sd-dss:dss-bom:6.5.1"))
     implementation("eu.europa.ec.joinup.sd-dss:dss-validation")
     implementation("eu.europa.ec.joinup.sd-dss:dss-pades")
     implementation("eu.europa.ec.joinup.sd-dss:dss-pades-pdfbox")
