@@ -1,7 +1,13 @@
 <script lang="ts">
+    import {Route, Router} from '@keksworks/svelte-tiny-router'
+    import HomePage from './pages/HomePage.svelte'
+    import NotFoundPage from './pages/NotFoundPage.svelte'
 </script>
 
-<main class="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-3 p-8 text-center">
-    <h1>CMR Sign Test Service</h1>
-    <p>This service is used for testing the CMR Sign core functionality through ui.</p>
-</main>
+<svelte:head>
+    <title>CMR Sign</title>
+</svelte:head>
+
+<Router noMatch={NotFoundPage}>
+    <Route path="/" component={HomePage}/>
+</Router>
