@@ -1,9 +1,10 @@
 package io.github.areiljan.cmrsign
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
+import ch.tutteli.atrium.api.fluent.en_GB.notToEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class Sha256Test {
     private val valid = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -11,42 +12,42 @@ class Sha256Test {
 
     @Test
     fun `accepts a valid lowercase 64-character hex string`() {
-        assertEquals(valid, Sha256(valid).hex)
+        expect(Sha256(valid).hex).toEqual(valid)
     }
 
     @Test
     fun `rejects uppercase hex`() {
-        assertThrows<IllegalArgumentException> { Sha256(valid.uppercase()) }
+        expect { Sha256(valid.uppercase()) }.toThrow<IllegalArgumentException>()
     }
 
     @Test
     fun `rejects a value that is too short`() {
-        assertThrows<IllegalArgumentException> { Sha256(valid.dropLast(1)) }
+        expect { Sha256(valid.dropLast(1)) }.toThrow<IllegalArgumentException>()
     }
 
     @Test
     fun `rejects a value that is too long`() {
-        assertThrows<IllegalArgumentException> { Sha256(valid + "0") }
+        expect { Sha256(valid + "0") }.toThrow<IllegalArgumentException>()
     }
 
     @Test
     fun `rejects non-hex characters`() {
-        assertThrows<IllegalArgumentException> { Sha256("z".repeat(64)) }
+        expect { Sha256("z".repeat(64)) }.toThrow<IllegalArgumentException>()
     }
 
     @Test
     fun `rejects an empty value`() {
-        assertThrows<IllegalArgumentException> { Sha256("") }
+        expect { Sha256("") }.toThrow<IllegalArgumentException>()
     }
 
     @Test
     fun `hash hello world`() {
-        assertNotEquals(helloWorld , Sha256.of("bye world".toByteArray()).hex)
-        assertEquals(helloWorld , Sha256.of("hello world".toByteArray()).hex)
+        expect(Sha256.of("bye world".toByteArray()).hex).notToEqual(helloWorld)
+        expect(Sha256.of("hello world".toByteArray()).hex).toEqual(helloWorld)
     }
 
     @Test
     fun `hash is deterministic`() {
-        assertEquals(Sha256.of("input".toByteArray()).hex, Sha256.of("input".toByteArray()).hex)
+        expect(Sha256.of("input".toByteArray()).hex).toEqual(Sha256.of("input".toByteArray()).hex)
     }
 }
