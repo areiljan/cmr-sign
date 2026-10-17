@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    `java-test-fixtures`
 }
 
 group = "io.github.areiljan"
@@ -12,9 +11,14 @@ kotlin {
     jvmToolchain(21)
 }
 
+sourceSets.test {
+    kotlin.srcDir(rootProject.file("core/src/mocks/kotlin"))
+    resources.srcDir(rootProject.file("core/src/mocks/resources"))
+}
+
 dependencies {
     implementation("org.apache.pdfbox:pdfbox:3.0.4")
-    implementation("org.bouncycastle:bcpkix-jdk18on:1.80")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
 
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

@@ -11,6 +11,11 @@ kotlin {
     jvmToolchain(21)
 }
 
+sourceSets.test {
+    kotlin.srcDir(rootProject.file("core/src/mocks/kotlin"))
+    resources.srcDir(rootProject.file("core/src/mocks/resources"))
+}
+
 dependencies {
     implementation(project(":core"))
 
@@ -22,7 +27,7 @@ dependencies {
     implementation("eu.europa.ec.joinup.sd-dss:dss-cms-object")
     implementation("eu.europa.ec.joinup.sd-dss:dss-utils-apache-commons")
 
-    testImplementation(testFixtures(project(":core")))
+    testImplementation("org.bouncycastle:bcpkix-jdk18on:1.86")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
