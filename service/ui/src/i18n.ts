@@ -1,6 +1,5 @@
 export const t = {
   general: {
-    optional: 'optional',
     remove: 'Remove',
   },
   shipments: {
