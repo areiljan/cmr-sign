@@ -19,22 +19,23 @@ class PadesSignerRoundTripTest {
         .sign(unsignedPdf(), "Test Signer")
 
     @Test
-    fun `a pades-signed pdf passes DSS and derives NA`() {
-        val verdict = DssPadesValidator(listOf(signingCertificate))
+    fun `sign pdf and validate`() {
+        var verdict = DssPadesValidator(listOf(signingCertificate))
             .validate(DocumentToValidate(signed, MediaType.PDF))
 
         expect(verdict.indication).toEqual(Indication.TOTAL_PASSED)
         expect(verdict.subIndication).toEqual(null)
         expect(verdict.qualification).toEqual(Qualification.NA)
         expect(verdict.signer.subjectName).toEqual(signingCertificate.subjectX500Principal.name)
-    }
 
-    @Test
-    fun `a tampered signed pdf is rejected`() {
+        verdict = DssPadesValidator(emptyList())
+            .validate(DocumentToValidate(signed, MediaType.PDF))
+        expect(verdict.indication).toEqual(Indication.INDETERMINATE)
+        expect(verdict.subIndication).toEqual("NO_CERTIFICATE_CHAIN_FOUND")
+
         val tampered = tamperTitle(signed)
-        val verdict = DssPadesValidator(listOf(signingCertificate))
+        verdict = DssPadesValidator(listOf(signingCertificate))
             .validate(DocumentToValidate(tampered, MediaType.PDF))
-
         expect(verdict.indication).toEqual(Indication.TOTAL_FAILED)
         expect(verdict.subIndication).toEqual("HASH_FAILURE")
     }

@@ -3,5 +3,5 @@ package io.github.areiljan.cmrsign
 enum class Indication {
     TOTAL_PASSED,
     TOTAL_FAILED,
-    INDETERMINATE,
+    INDETERMINATE, // cannot verify
 }
