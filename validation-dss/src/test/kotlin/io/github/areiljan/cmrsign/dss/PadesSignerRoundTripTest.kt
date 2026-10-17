@@ -8,6 +8,7 @@ import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.PadesSigner
 import io.github.areiljan.cmrsign.Qualification
 import io.github.areiljan.cmrsign.certificate
+import io.github.areiljan.cmrsign.expiredCertificate
 import io.github.areiljan.cmrsign.keyPair
 import io.github.areiljan.cmrsign.unsignedPdf
 import org.junit.jupiter.api.Test
@@ -38,6 +39,15 @@ class PadesSignerRoundTripTest {
             .validate(DocumentToValidate(tampered, MediaType.PDF))
         expect(verdict.indication).toEqual(Indication.TOTAL_FAILED)
         expect(verdict.subIndication).toEqual("HASH_FAILURE")
+
+        val expiredKeyPair = keyPair()
+        val expiredSigningCertificate = expiredCertificate(expiredKeyPair)
+        val expiredSigned = PadesSigner(expiredKeyPair.private, listOf(expiredSigningCertificate))
+            .sign(unsignedPdf(), "Test Signer")
+        verdict = DssPadesValidator(listOf(expiredSigningCertificate))
+            .validate(DocumentToValidate(expiredSigned, MediaType.PDF))
+        expect(verdict.indication).toEqual(Indication.INDETERMINATE)
+        expect(verdict.subIndication).toEqual("SIG_CONSTRAINTS_FAILURE")
     }
 
     private fun tamperTitle(pdf: ByteArray): ByteArray {

@@ -18,17 +18,31 @@ fun keyPair(): KeyPair =
         .generateKeyPair()
 
 fun certificate(keyPair: KeyPair): X509Certificate {
+    val now = System.currentTimeMillis()
+    return createCertificate(keyPair, Date(now - DAY_MILLIS), Date(now + TEN_YEARS_MILLIS))
+}
+
+fun expiredCertificate(keyPair: KeyPair): X509Certificate {
+    val now = System.currentTimeMillis()
+    return createCertificate(keyPair, Date(now - 30 * DAY_MILLIS), Date(now - DAY_MILLIS))
+}
+
+fun unsignedPdf(): ByteArray =
+    requireNotNull(object {}.javaClass.getResourceAsStream("/example-unsigned.pdf")) {
+        "missing test resource: example-unsigned.pdf"
+    }.use { it.readBytes() }
+
+private fun createCertificate(keyPair: KeyPair, notBefore: Date, notAfter: Date): X509Certificate {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
         Security.addProvider(BouncyCastleProvider())
     }
 
     val subject = X500Name("CN=CMR Sign Test Signer")
-    val now = System.currentTimeMillis()
     val builder = JcaX509v3CertificateBuilder(
         subject,
-        BigInteger.valueOf(now),
-        Date(now - DAY_MILLIS),
-        Date(now + TEN_YEARS_MILLIS),
+        BigInteger.valueOf(System.currentTimeMillis()),
+        notBefore,
+        notAfter,
         subject,
         keyPair.public,
     )
@@ -40,11 +54,6 @@ fun certificate(keyPair: KeyPair): X509Certificate {
         .setProvider(BouncyCastleProvider.PROVIDER_NAME)
         .getCertificate(builder.build(signer))
 }
-
-fun unsignedPdf(): ByteArray =
-    requireNotNull(object {}.javaClass.getResourceAsStream("/example-unsigned.pdf")) {
-        "missing test resource: example-unsigned.pdf"
-    }.use { it.readBytes() }
 
 private const val DAY_MILLIS = 24L * 60 * 60 * 1000
 private const val TEN_YEARS_MILLIS = 3650L * DAY_MILLIS
