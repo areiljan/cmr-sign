@@ -13,6 +13,9 @@ data class Envelope(
     val format: SignatureFormat,
     val signerClass: SignerClass,
     val state: EnvelopeState = EnvelopeState.CREATED,
+    val providerSessionId: String? = null,
+    val signerSubject: String? = null,
+    val proofingMethod: String? = null,
     override val id: Id<DomainEnvelope> = Id('E'),
 ): Entity<DomainEnvelope>
 

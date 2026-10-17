@@ -1,5 +1,8 @@
 package io.github.areiljan.cmrsign.service.envelopes
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
+import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.Envelope as DomainEnvelope
 import io.github.areiljan.cmrsign.EnvelopeState
 import io.github.areiljan.cmrsign.Id
@@ -16,9 +19,6 @@ import klite.HttpExchange
 import klite.NotFoundException
 import klite.NotModifiedException
 import klite.StatusCode.Companion.OK
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.Base64
 
@@ -43,15 +43,15 @@ class EnvelopeRoutesTest : BaseMocks() {
             )
         )
 
-        assertEquals(created, envelopeSlot.captured.toDomain())
-        assertEquals(EnvelopeState.CREATED, envelopeSlot.captured.state)
+        expect(envelopeSlot.captured.toDomain()).toEqual(created)
+        expect(envelopeSlot.captured.state).toEqual(EnvelopeState.CREATED)
 
         with(documentSlot.captured) {
-            assertEquals(created.id, envelopeId)
-            assertEquals(1, version)
-            assertEquals(MediaType.PDF, contentType)
-            assertEquals(Sha256.of(payload), sha256)
-            assertTrue(payload.contentEquals(content))
+            expect(envelopeId).toEqual(created.id)
+            expect(version).toEqual(1)
+            expect(contentType).toEqual(MediaType.PDF)
+            expect(sha256).toEqual(Sha256.of(payload))
+            expect(content.toList()).toEqual(payload.toList())
         }
     }
 
@@ -79,7 +79,7 @@ class EnvelopeRoutesTest : BaseMocks() {
         val exchange = mockk<HttpExchange>(relaxed = true)
         every { exchange.header("If-None-Match") } returns "\"${document.sha256.hex}\""
 
-        assertThrows(NotModifiedException::class.java) { routes.download(exchange, envelopeId, 1) }
+        expect { routes.download(exchange, envelopeId, 1) }.toThrow<NotModifiedException>()
     }
 
     @Test
@@ -88,6 +88,24 @@ class EnvelopeRoutesTest : BaseMocks() {
         every { documents.by(Document::version to 7, Document::envelopeId to envelopeId) } returns null
         val exchange = mockk<HttpExchange>(relaxed = true)
 
-        assertThrows(NotFoundException::class.java) { routes.download(exchange, envelopeId, 7) }
+        expect { routes.download(exchange, envelopeId, 7) }.toThrow<NotFoundException>()
+    }
+
+    @Test
+    fun `session flow`() {
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED)
+        every { envelopes.get(envelope.id) } returns envelope
+        val saved = slot<Envelope>()
+        every { envelopes.save(capture(saved)) } returns 1
+
+        val started = routes.start(envelope.id)
+        expect(started.state).toEqual(EnvelopeState.IDENTITY_PROVEN)
+        expect(started.providerSessionId.isNotBlank()).toEqual(true)
+        expect(started.signerSubject).toEqual("Reference Signer")
+        expect(started.proofingMethod).toEqual("reference-provider")
+        expect(saved.captured.state).toEqual(EnvelopeState.IDENTITY_PROVEN)
+        expect(saved.captured.providerSessionId).toEqual(started.providerSessionId)
+        expect(saved.captured.signerSubject).toEqual("Reference Signer")
+        expect(saved.captured.proofingMethod).toEqual("reference-provider")
     }
 }

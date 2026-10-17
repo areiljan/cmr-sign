@@ -4,10 +4,13 @@
 export interface Document {content: Array<number>; contentType: MediaType; envelopeId: Id<Envelope>; id: Id<Document>; sha256: Sha256; version: number}
 
 // class io.github.areiljan.cmrsign.service.envelopes.Envelope
-export interface Envelope {format: SignatureFormat; id: Id<Envelope>; signerClass: SignerClass; state: EnvelopeState}
+export interface Envelope {format: SignatureFormat; id: Id<Envelope>; proofingMethod?: string; providerSessionId?: string; signerClass: SignerClass; signerSubject?: string; state: EnvelopeState}
 
 // class io.github.areiljan.cmrsign.service.envelopes.EnvelopeCreationRequest
 export interface EnvelopeCreationRequest {contentType: MediaType; format: SignatureFormat; payload: string; signerClass: SignerClass}
+
+// class io.github.areiljan.cmrsign.service.envelopes.SessionStarted
+export interface SessionStarted {id: Id<Envelope>; proofingMethod?: string; providerSessionId: string; signerSubject: string; state: EnvelopeState}
 
 // class io.github.areiljan.cmrsign.MediaType
 export type MediaType = string
@@ -21,7 +24,8 @@ export enum SignatureFormat {PADES = 'PADES'}
 // class io.github.areiljan.cmrsign.SignerClass
 export enum SignerClass {REGISTERED = 'REGISTERED', AD_HOC = 'AD_HOC'}
 
+// class io.github.areiljan.cmrsign.EnvelopeState
+export enum EnvelopeState {CREATED = 'CREATED', IDENTITY_PROVEN = 'IDENTITY_PROVEN'}
+
 // io.github.areiljan.cmrsign.Id
 export type Id<T> = string & {_of?: T}
-// io.github.areiljan.cmrsign.EnvelopeState
-export type EnvelopeState = 'CREATED'

@@ -20,11 +20,6 @@ class EnvelopeRepository(db: DataSource): CrudRepository<Envelope, DomainEnvelop
 
 class DocumentRepository(db: DataSource): CrudRepository<Document, Document>(db, "documents")
 
-private val EnvelopeState.dbValue get() = when (this) {
-    EnvelopeState.CREATED -> "CREATED"
-}
+private val EnvelopeState.dbValue get() = name
 
-private fun envelopeState(value: String) = when (value) {
-    "CREATED" -> EnvelopeState.CREATED
-    else -> error("unknown EnvelopeState: $value")
-}
+private fun envelopeState(value: String) = EnvelopeState.valueOf(value)

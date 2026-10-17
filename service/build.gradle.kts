@@ -29,6 +29,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.14")
 
     testImplementation(klite("jdbc-test"))
+    testImplementation("ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-2")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -72,8 +73,7 @@ tasks.register<JavaExec>("types.ts") {
     args(
         layout.buildDirectory.dir("classes/kotlin/main").get().asFile.path,
         "-r", "io\\.github\\.areiljan\\.cmrsign\\.service\\..*Routes",
-        "io.github.areiljan.cmrsign.Id=string & {_of?: T}",
-        "io.github.areiljan.cmrsign.EnvelopeState='CREATED'"
+        "io.github.areiljan.cmrsign.Id=string & {_of?: T}"
     )
     standardOutput = ByteArrayOutputStream()
     doLast {

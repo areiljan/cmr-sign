@@ -7,7 +7,6 @@ import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
 import io.github.areiljan.cmrsign.service.db.DBTest
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DocumentRepositoryTest : DBTest() {
@@ -29,6 +28,6 @@ class DocumentRepositoryTest : DBTest() {
         expect(loaded.version).toEqual(document.version)
         expect(loaded.contentType).toEqual(document.contentType)
         expect(loaded.sha256).toEqual(document.sha256)
-        assertTrue(loaded.content.contentEquals(document.content))
+        expect(loaded.content.toList()).toEqual(document.content.toList())
     }
 }

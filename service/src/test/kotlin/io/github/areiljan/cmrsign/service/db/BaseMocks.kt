@@ -1,5 +1,7 @@
 package io.github.areiljan.cmrsign.service.db
 
+import io.github.areiljan.cmrsign.ReferenceSigningProvider
+import io.github.areiljan.cmrsign.SigningProvider
 import io.github.areiljan.cmrsign.service.envelopes.DocumentRepository
 import io.github.areiljan.cmrsign.service.envelopes.EnvelopeRepository
 import io.mockk.clearAllMocks
@@ -12,6 +14,8 @@ abstract class BaseMocks {
 
         val envelopes = mock<EnvelopeRepository>(relaxed = true)
         val documents = mock<DocumentRepository>(relaxed = true)
+
+        init { registry.register(SigningProvider::class, ReferenceSigningProvider()) }
 
         inline fun <reified T : Any> create() = registry.create(T::class)
 

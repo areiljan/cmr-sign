@@ -1,5 +1,7 @@
 package io.github.areiljan.cmrsign.service
 
+import io.github.areiljan.cmrsign.ReferenceSigningProvider
+import io.github.areiljan.cmrsign.SigningProvider
 import io.github.areiljan.cmrsign.service.db.initDB
 import io.github.areiljan.cmrsign.service.envelopes.EnvelopeRoutes
 import io.github.areiljan.cmrsign.service.security.PlatformKeyGuard
@@ -10,6 +12,7 @@ import klite.annotations.annotated
 import klite.isProd
 import klite.jdbc.RequestTransactionHandler
 import klite.json.JsonBody
+import klite.register
 import java.nio.file.Path
 import kotlin.io.path.exists
 
@@ -19,6 +22,7 @@ fun main() {
     val assetsPath = Path.of("ui/build").takeIf { it.exists() } ?: Path.of("ui/public")
 
     Server().apply {
+        register<SigningProvider>(ReferenceSigningProvider())
         initDB()
         use<RequestTransactionHandler>()
         use<JsonBody>()

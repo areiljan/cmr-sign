@@ -9,16 +9,10 @@ data class Envelope(
 
 enum class EnvelopeState {
     CREATED,
-    SESSION_STARTED,
     IDENTITY_PROVEN,
 }
 
 fun EnvelopeState.startSession(): EnvelopeState = when (this) {
-    EnvelopeState.CREATED -> EnvelopeState.SESSION_STARTED
+    EnvelopeState.CREATED -> EnvelopeState.IDENTITY_PROVEN
     else -> error("cannot start a session from $this")
-}
-
-fun EnvelopeState.confirmIdentity(): EnvelopeState = when (this) {
-    EnvelopeState.SESSION_STARTED -> EnvelopeState.IDENTITY_PROVEN
-    else -> error("cannot confirm identity from $this")
 }
