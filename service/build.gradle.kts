@@ -17,9 +17,14 @@ kotlin {
     jvmToolchain(21)
 }
 
+sourceSets.test {
+    resources.srcDir(rootProject.file("core/src/mocks/resources"))
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(project(":validation-dss"))
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
 
     fun klite(module: String) = "com.github.keksworks.klite:klite-$module:2.0.7"
     implementation(klite("server"))

@@ -6,6 +6,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.Envelope as DomainEnvelope
 import io.github.areiljan.cmrsign.EnvelopeState
 import io.github.areiljan.cmrsign.Id
+import io.github.areiljan.cmrsign.Indication
 import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
@@ -101,11 +102,42 @@ class EnvelopeRoutesTest : BaseMocks() {
         val started = routes.start(envelope.id)
         expect(started.state).toEqual(EnvelopeState.IDENTITY_PROVEN)
         expect(started.providerSessionId.isNotBlank()).toEqual(true)
-        expect(started.signerSubject).toEqual("Reference Signer")
+        expect(started.signerSubject).toEqual(signingProvider.certificate.subjectX500Principal.name)
         expect(started.proofingMethod).toEqual("reference-provider")
         expect(saved.captured.state).toEqual(EnvelopeState.IDENTITY_PROVEN)
         expect(saved.captured.providerSessionId).toEqual(started.providerSessionId)
-        expect(saved.captured.signerSubject).toEqual("Reference Signer")
+        expect(saved.captured.signerSubject).toEqual(signingProvider.certificate.subjectX500Principal.name)
         expect(saved.captured.proofingMethod).toEqual("reference-provider")
     }
+
+    @Test
+    fun `sign flow`() {
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED)
+        every { envelopes.get(envelope.id) } returns envelope
+        val savedEnvelope = slot<Envelope>()
+        every { envelopes.save(capture(savedEnvelope)) } returns 1
+
+        routes.start(envelope.id)
+        every { envelopes.get(envelope.id) } returns savedEnvelope.captured
+
+        val unsigned = unsignedPdf()
+        val document = Document(envelope.id, 1, MediaType.PDF, Sha256.of(unsigned), unsigned)
+        every { documents.by(Document::version to 1, Document::envelopeId to envelope.id) } returns document
+        val savedDocument = slot<Document>()
+        every { documents.save(capture(savedDocument)) } returns 1
+
+        val signed = routes.sign(envelope.id)
+
+        expect(signed.state).toEqual(EnvelopeState.VALIDATED)
+        expect(signed.documentVersion).toEqual(2)
+        expect(signed.verdict.indication).toEqual(Indication.TOTAL_PASSED)
+        expect(savedDocument.captured.version).toEqual(2)
+        expect(savedDocument.captured.sha256).toEqual(Sha256.of(savedDocument.captured.content))
+        expect(savedEnvelope.captured.state).toEqual(EnvelopeState.VALIDATED)
+    }
+
+    private fun unsignedPdf(): ByteArray =
+        requireNotNull(javaClass.getResourceAsStream("/example-unsigned.pdf")) {
+            "missing test resource: example-unsigned.pdf"
+        }.use { it.readBytes() }
 }

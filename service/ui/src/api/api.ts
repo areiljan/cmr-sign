@@ -1,4 +1,4 @@
-import type {Envelope} from './types'
+import type {Envelope, SessionStarted, Signed} from './types'
 import {SignatureFormat, SignerClass} from './types'
 
 export const headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'} as HeadersInit
@@ -33,6 +33,14 @@ class Api {
             signerClass: SignerClass.REGISTERED,
             payload: await toBase64(file),
         })
+    }
+
+    startSession(id: string): Promise<SessionStarted> {
+        return this.post(`envelopes/${id}/start`)
+    }
+
+    signEnvelope(id: string): Promise<Signed> {
+        return this.post(`envelopes/${id}/sign`)
     }
 
     private async request(path: string, init?: RequestInit | { body?: Body, headers?: HeadersInit }): Promise<any> {

@@ -1,9 +1,11 @@
 package io.github.areiljan.cmrsign.service
 
-import io.github.areiljan.cmrsign.ReferenceSigningProvider
 import io.github.areiljan.cmrsign.SigningProvider
+import io.github.areiljan.cmrsign.Validator
+import io.github.areiljan.cmrsign.dss.DssPadesValidator
 import io.github.areiljan.cmrsign.service.db.initDB
 import io.github.areiljan.cmrsign.service.envelopes.EnvelopeRoutes
+import io.github.areiljan.cmrsign.service.reference.ReferenceSigningProvider
 import io.github.areiljan.cmrsign.service.security.PlatformKeyGuard
 import klite.AssetsHandler
 import klite.Config
@@ -22,7 +24,9 @@ fun main() {
     val assetsPath = Path.of("ui/build").takeIf { it.exists() } ?: Path.of("ui/public")
 
     Server().apply {
-        register<SigningProvider>(ReferenceSigningProvider())
+        val signingProvider = ReferenceSigningProvider()
+        register<SigningProvider>(signingProvider)
+        register<Validator>(DssPadesValidator(listOf(signingProvider.certificate)))
         initDB()
         use<RequestTransactionHandler>()
         use<JsonBody>()
