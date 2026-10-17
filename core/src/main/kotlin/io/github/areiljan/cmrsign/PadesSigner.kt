@@ -1,9 +1,9 @@
 package io.github.areiljan.cmrsign
 
 import org.apache.pdfbox.Loader
-import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature
 import org.bouncycastle.asn1.ASN1EncodableVector
+import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DERSet
 import org.bouncycastle.asn1.cms.Attribute
 import org.bouncycastle.asn1.cms.AttributeTable
@@ -30,10 +30,15 @@ import java.security.Security
 import java.security.cert.X509Certificate
 import java.util.Calendar
 
-class PadesSigner(
-    private val privateKey: PrivateKey,
+class PadesSigner private constructor(
     private val certificateChain: List<X509Certificate>,
+    private val contentSigner: () -> ContentSigner,
 ) {
+    constructor(privateKey: PrivateKey, certificateChain: List<X509Certificate>) : this(
+        certificateChain,
+        { JcaContentSignerBuilder("SHA256withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privateKey) },
+    )
+
     init {
         require(certificateChain.isNotEmpty()) { "certificate chain must not be empty" }
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -75,11 +80,6 @@ class PadesSigner(
         }
     }
 
-    private fun contentSigner(): ContentSigner =
-        JcaContentSignerBuilder("SHA256withRSA")
-            .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-            .build(privateKey)
-
     private fun digestCalculatorProvider() =
         JcaDigestCalculatorProviderBuilder()
             .setProvider(BouncyCastleProvider.PROVIDER_NAME)
@@ -96,5 +96,26 @@ class PadesSigner(
         )
         val vector = ASN1EncodableVector().apply { add(attribute) }
         return DefaultSignedAttributeTableGenerator(AttributeTable(vector))
+    }
+
+    private class ProviderContentSigner(
+        private val provider: SigningProvider,
+        private val session: String,
+    ) : ContentSigner {
+        private val buffer = ByteArrayOutputStream()
+
+        override fun getOutputStream() = buffer
+
+        override fun getAlgorithmIdentifier() =
+            AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption, DERNull.INSTANCE)
+
+        override fun getSignature(): ByteArray = provider.sign(session, buffer.toByteArray())
+    }
+
+    companion object {
+        fun forProvider(provider: SigningProvider, session: String, identity: SignerIdentity): PadesSigner {
+            require(identity.certificateChain.isNotEmpty()) { "signer identity must contain a certificate chain" }
+            return PadesSigner(identity.certificateChain) { ProviderContentSigner(provider, session) }
+        }
     }
 }
