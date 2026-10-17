@@ -34,6 +34,7 @@ class DssPadesValidator(
 
         return Verdict.from(
             indication = indicationOf(simple.getIndication(id)),
+            subIndication = simple.getSubIndication(id)?.name,
             qualification = qualificationOf(simple.getSignatureQualification(id)),
             signer = signerIdentity(reports, id),
         )
@@ -51,10 +52,13 @@ class DssPadesValidator(
 
     private fun indicationOf(dss: DssIndication): Indication = when (dss) {
         DssIndication.TOTAL_PASSED -> Indication.TOTAL_PASSED
+        DssIndication.TOTAL_FAILED -> Indication.TOTAL_FAILED
+        DssIndication.INDETERMINATE -> Indication.INDETERMINATE
         else -> throw UnsupportedOperationException("unsupported DSS indication: $dss")
     }
 
-    private fun qualificationOf(dss: DssQualification): Qualification = when (dss) {
+    private fun qualificationOf(dss: DssQualification?): Qualification = when (dss) {
+        null,
         DssQualification.NA -> Qualification.NA
         else -> throw UnsupportedOperationException("unsupported DSS qualification: $dss")
     }

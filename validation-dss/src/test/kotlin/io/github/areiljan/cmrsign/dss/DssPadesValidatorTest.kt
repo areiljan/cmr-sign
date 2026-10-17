@@ -1,10 +1,11 @@
 package io.github.areiljan.cmrsign.dss
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.DocumentToValidate
 import io.github.areiljan.cmrsign.Indication
 import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Qualification
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -15,8 +16,8 @@ class DssPadesValidatorTest {
         val verdict = DssPadesValidator(listOf(signerCertificate()))
             .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
 
-        assertEquals(Indication.TOTAL_PASSED, verdict.indication)
-        assertEquals(Qualification.NA, verdict.qualification)
+        expect(verdict.indication).toEqual(Indication.TOTAL_PASSED)
+        expect(verdict.qualification).toEqual(Qualification.NA)
     }
 
     @Test
@@ -26,7 +27,7 @@ class DssPadesValidatorTest {
         val verdict = DssPadesValidator(listOf(certificate))
             .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
 
-        assertEquals(certificate.subjectX500Principal.name, verdict.signer.subjectName)
+        expect(verdict.signer.subjectName).toEqual(certificate.subjectX500Principal.name)
     }
 
     private fun signerCertificate(): X509Certificate =

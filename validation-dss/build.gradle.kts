@@ -28,6 +28,7 @@ dependencies {
     implementation("eu.europa.ec.joinup.sd-dss:dss-utils-apache-commons")
 
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.86")
+    testImplementation("ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-2")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
