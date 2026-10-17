@@ -1,24 +1,46 @@
 # CMR Sign
 
-Open-source service and Kotlin library for adding and verifying **personal electronic signatures** to freight documents such as CMR consignment notes and eFTI records.
+Open-source Kotlin library and demo app for **personal electronic signatures** on freight documents such as CMR consignment notes and eFTI records.
 
-It integrates with signing providers rather than issuing certificates. Assurance levels are always derived from standards-based validation, never declared by the caller.
+## What works now
 
-## Who it is for
+- Create a signing request from a PDF and fetch its state.
+- Protect platform routes with a shared API key.
+- Start a registered-signer demo session, prove identity, and store the signer.
+- Sign through a provider interface and produce PAdES signatures.
+- Validate with EU DSS:
+  - valid → `TOTAL_PASSED`
+  - tampered → `TOTAL_FAILED` / `HASH_FAILURE`
+  - untrusted chain → `INDETERMINATE` / `NO_CERTIFICATE_CHAIN_FOUND`
+  - expired certificate → `INDETERMINATE` / `SIG_CONSTRAINTS_FAILURE`
+- Store the signed document as an immutable new version.
+- Download document versions through the API.
+- Try the demo UI: create → start session → sign → see verdict.
 
-- **Logistics and eFTI platforms** that need signatures on freight documents without building a signing stack.
-- **Carriers, forwarders, shippers and consignees** who sign as natural persons, including one-off signers with no account or certificate.
-- **Verifiers and authorities** who need a clear, standards-based verdict on a signed document.
-- **Developers** embedding signing or validation in Kotlin/JVM applications through a small library and REST API.
+## Not implemented yet
 
-## What it aims to provide
+- Real e-ID/QTSP provider and AdES/QES qualification.
+- Signer consent with a visible document hash.
+- Persisted validation reports and webhooks.
+- Ad hoc signing links and signer pages.
+- Long-term validity (B-LT / B-LTA).
+- Revoked-certificate validation.
+- OpenAPI description.
+- Downloading the signed document from the UI.
 
-- **Two signer classes** — registered signers using an existing e-ID, and ad hoc signers reached through a single-use, expiring link with provider-led identity proofing.
-- **Derived assurance** — the service reports the qualification (AdES/QES) that validation derives from the certificate and trusted lists. Weak identity proofing is reported honestly, never relabelled as a stronger signature.
-- **Standards-based validation** — ETSI EN 319 102-1 verdicts via EU DSS, including tamper detection, revocation and trust-chain checks, and long-term validity (B-LT).
-- **No key custody** — signers' private keys stay with them or their provider; the service only handles the data to be signed and the resulting signature value.
-- **Payload- and format-agnostic core** — CMR PDFs today; structured eFTI datasets, CAdES, XAdES, JAdES and ASiC are planned seams, not assumptions baked into the domain.
-- **Simple deployment** — one non-root container, PostgreSQL and a Compose file; configuration comes only from environment variables.
+## Reference provider warning
+
+The demo uses a **self-signed reference identity**, not a real trust service.
+
+- The derived qualification is `NA`, never AdES or QES.
+- The signature is **not a legally valid eIDAS signature**.
+- Provider sessions are in memory; restarting the demo between “Start session” and “Sign” loses the session.
+
+The code is built around a `SigningProvider` interface. Wiring a real e-ID/QTSP adapter is the next step, so an integrator can bring their own provider.
+
+## Using the libraries
+
+Add `core` to your JVM application and implement `SigningProvider`. Add `validation-dss` only if you need in-process DSS validation. `core` has no web, database or framework dependency.
 
 ## Project layout
 
@@ -26,50 +48,64 @@ It integrates with signing providers rather than issuing certificates. Assurance
 |---|---|
 | `core` | Framework-free domain, state machine, value types, signing and provider interfaces |
 | `validation-dss` | EU DSS-backed validator; the only module that imports DSS |
-| `service` | HTTP API, PostgreSQL storage, webhooks, signer page |
+| `demo` | Optional HTTP demo app, PostgreSQL storage and UI |
 
 ## Getting started
 
-### Prerequisites
+Prerequisites: Docker with Compose for the demo; JDK 25 for local Gradle builds.
 
-- Docker with Compose (quickest path)
-- JDK 21+ for local development and tests
-
-### Run the full stack
+### Run the demo
 
 ```bash
 cp .env.example .env
-# set a strong PLATFORM_API_KEY in .env
+# set PLATFORM_API_KEY=dev-insecure-key for the bundled UI
 docker compose up --build
 ```
 
-The service listens on <http://localhost:8080>; the database is exposed on `127.0.0.1:5442`.
+Open <http://localhost:8080>.
 
-Check that it is up:
-
-```bash
-curl http://localhost:8080/health
-```
-
-API routes live under `/api` and require the `X-Api-Key` header. The health check is public.
-
-### Local development
+### Frontend development
 
 ```bash
 docker compose up -d db
-./gradlew test
-./gradlew :service:run
-```
+cp .env demo/.env
+./gradlew :demo:run
 
-For the UI:
-
-```bash
-cd service/ui
+cd demo/ui
 npm install
 npm run dev
 ```
 
-### Configuration
+Open <http://localhost:8000>. Vite proxies `/api` and `/health` to `localhost:8080`.
+
+### Demo flow
+
+1. Upload `core/src/mocks/resources/example-unsigned.pdf`.
+2. **Create request** → `CREATED`.
+3. **Start session** → `IDENTITY_PROVEN`.
+4. **Sign** → `VALIDATED` with the verdict shown.
+5. Download version 2 through the API:
+
+```bash
+curl -H "X-Api-Key: dev-insecure-key" \
+  -o signed.pdf \
+  http://localhost:8080/api/envelopes/{id}/documents/2
+```
+
+## API
+
+Platform routes require `X-Api-Key`. The health check is public.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/api/envelopes` | Create a request; JSON body with a base64 `payload` |
+| `GET` | `/api/envelopes/{id}` | Read the request state |
+| `POST` | `/api/envelopes/{id}/start` | Start the reference signer session and prove identity |
+| `POST` | `/api/envelopes/{id}/sign` | Sign the document, validate it and return the verdict |
+| `GET` | `/api/envelopes/{id}/documents/{version}` | Download a document version; `ETag` is the SHA-256 |
+| `GET` | `/health` | Liveness |
+
+## Configuration
 
 | Variable | Purpose |
 |---|---|
@@ -78,3 +114,16 @@ npm run dev
 | `DB_USER`, `DB_PASS` | Database credentials |
 | `PORT` | HTTP port (default `8080`) |
 | `ENV` | Runtime environment (`dev`, `prod`) |
+
+See [`.env.example`](.env.example) for development defaults. Never commit real keys or credentials.
+
+## Tests
+
+```bash
+./gradlew test
+cd demo/ui && npm run check && npm test -- --run
+```
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
