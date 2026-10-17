@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    `maven-publish`
 }
 
 group = "io.github.areiljan"
@@ -9,6 +10,30 @@ repositories { mavenCentral() }
 
 kotlin {
     jvmToolchain(21)
+}
+
+java {
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "cmr-sign-core"
+            pom {
+                name.set("CMR Sign Core")
+                description.set("Framework-free domain and signing library for CMR Sign")
+                url.set("https://github.com/areiljan/cmr-sign")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://github.com/areiljan/cmr-sign/blob/main/LICENSE")
+                    }
+                }
+            }
+        }
+    }
 }
 
 sourceSets.test {
