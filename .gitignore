@@ -3,6 +3,6 @@ build/
 .gradle/
 .kotlin/
 .env
-service/ui/build
-service/ui/node_modules
+demo/ui/build
+demo/ui/node_modules
 .idea/libraries
