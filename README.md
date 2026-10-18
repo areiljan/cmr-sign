@@ -7,6 +7,7 @@ Open-source Kotlin library and demo app for **personal electronic signatures** o
 - Create a signing request from a PDF and fetch its state.
 - Protect platform routes with a shared API key.
 - Start a registered-signer demo session, prove identity, and store the signer.
+- Review the document SHA-256 and give explicit consent before signing.
 - Sign through a provider interface and produce PAdES signatures.
 - Validate with EU DSS:
   - valid → `TOTAL_PASSED`
@@ -20,7 +21,6 @@ Open-source Kotlin library and demo app for **personal electronic signatures** o
 ## Not implemented yet
 
 - Real e-ID/QTSP provider and AdES/QES qualification.
-- Signer consent with a visible document hash.
 - Persisted validation reports and webhooks.
 - Ad hoc signing links and signer pages.
 - Long-term validity (B-LT / B-LTA).
@@ -52,7 +52,7 @@ Add `core` to your JVM application and implement `SigningProvider`. Add `validat
 
 ## Getting started
 
-Prerequisites: Docker with Compose for the demo; JDK 25 for local Gradle builds.
+Prerequisites: Docker with Compose for the demo; JDK 21+ for local Gradle builds.
 
 ### Run the demo
 
@@ -83,7 +83,7 @@ Open <http://localhost:8000>. Vite proxies `/api` and `/health` to `localhost:80
 1. Upload `core/src/mocks/resources/example-unsigned.pdf`.
 2. **Create request** → `CREATED`.
 3. **Start session** → `IDENTITY_PROVEN`.
-4. **Sign** → `VALIDATED` with the verdict shown.
+4. Review the SHA-256, check the consent box, then **Sign** → `VALIDATED` with the verdict shown.
 5. Download version 2 through the API:
 
 ```bash
@@ -101,7 +101,7 @@ Platform routes require `X-Api-Key`. The health check is public.
 | `POST` | `/api/envelopes` | Create a request; JSON body with a base64 `payload` |
 | `GET` | `/api/envelopes/{id}` | Read the request state |
 | `POST` | `/api/envelopes/{id}/start` | Start the reference signer session and prove identity |
-| `POST` | `/api/envelopes/{id}/sign` | Sign the document, validate it and return the verdict |
+| `POST` | `/api/envelopes/{id}/sign` | Sign the reviewed document hash, validate it and return the verdict |
 | `GET` | `/api/envelopes/{id}/documents/{version}` | Download a document version; `ETag` is the SHA-256 |
 | `GET` | `/health` | Liveness |
 
