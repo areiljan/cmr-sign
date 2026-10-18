@@ -1,7 +1,6 @@
 <script lang="ts">
   import api, {setApiKey} from 'src/api/api'
   import type {Envelope, Signed} from 'src/api/types'
-  import {EnvelopeState} from 'src/api/types'
   import Button from 'src/components/Button.svelte'
   import FileField from 'src/components/FileField.svelte'
   import Section from 'src/components/Section.svelte'
@@ -18,7 +17,6 @@
   let signed: Signed | undefined
 
   $: canCreate = !!attachment
-  $: canSign = envelope?.state === EnvelopeState.IDENTITY_PROVEN
 
   async function create() {
     if (!attachment) return
@@ -28,17 +26,6 @@
       showToast(`Request ${envelope.id} created`)
     } catch (e: any) {
       showToast(e.message || 'Request failed', {type: ToastType.ERROR})
-    }
-  }
-
-  async function sign() {
-    if (!envelope) return
-    try {
-      signed = await api.signEnvelope(envelope.id)
-      envelope = {...envelope, state: signed.state}
-      showToast(`Signature ${signed.verdict.indication}`)
-    } catch (e: any) {
-      showToast(e.message || 'Signing failed', {type: ToastType.ERROR})
     }
   }
 </script>
@@ -57,9 +44,7 @@
   </Section>
 
   {#if envelope}
-    <EnvelopeSection {envelope}>
-      <Button class="primary" label="Sign" onclick={sign} disabled={!canSign}/>
-    </EnvelopeSection>
+    <EnvelopeSection bind:envelope onSigned={result => signed = result}/>
   {/if}
 
   {#if signed}

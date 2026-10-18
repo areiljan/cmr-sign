@@ -39,8 +39,8 @@ class Api {
         return this.post(`envelopes/${id}/start`)
     }
 
-    signEnvelope(id: string): Promise<Signed> {
-        return this.post(`envelopes/${id}/sign`)
+    signEnvelope(id: string, documentSha256: string): Promise<Signed> {
+        return this.post(`envelopes/${id}/sign`, {documentSha256})
     }
 
     private async request(path: string, init?: RequestInit | { body?: Body, headers?: HeadersInit }): Promise<any> {

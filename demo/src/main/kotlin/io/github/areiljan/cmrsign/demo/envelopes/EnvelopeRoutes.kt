@@ -55,20 +55,23 @@ class EnvelopeRoutes(
     fun start(@PathParam id: Id<DomainEnvelope>): SessionStarted {
         val envelope = envelopes.get(id)
         require(envelope.signerClass == SignerClass.REGISTERED) { "only registered signers can start a session" }
+        val document = documents.by(Document::version to 1, Document::envelopeId to id)
+            ?: throw NotFoundException("no document for $id")
         val state = envelope.state.startSession()
         val sessionId = signingProvider.startSession(envelope.id.value)
         val identity = signingProvider.completeSession(sessionId)
         val updated = envelope.copy(state = state, providerSessionId = sessionId, signerSubject = identity.subjectName, proofingMethod = identity.proofingMethod,)
         envelopes.save(updated)
-        return SessionStarted(id = updated.id, state = updated.state, providerSessionId = sessionId, signerSubject = identity.subjectName, proofingMethod = identity.proofingMethod,)
+        return SessionStarted(id = updated.id, state = updated.state, providerSessionId = sessionId, signerSubject = identity.subjectName, proofingMethod = identity.proofingMethod, documentVersion = document.version, documentSha256 = document.sha256)
     }
 
     @POST("/:id/sign")
-    fun sign(@PathParam id: Id<DomainEnvelope>): Signed {
+    fun sign(@PathParam id: Id<DomainEnvelope>, body: SignRequest): Signed {
         val envelope = envelopes.get(id)
         val sessionId = requireNotNull(envelope.providerSessionId) { "session not started" }
         val document = documents.by(Document::version to 1, Document::envelopeId to id)
             ?: throw NotFoundException("no document for $id")
+        require(document.sha256 == body.documentSha256) { "document hash does not match" }
         val identity = signingProvider.completeSession(sessionId)
         val signedState = envelope.state.sign()
         val signed = PadesSigner.forProvider(signingProvider, sessionId, identity)
@@ -113,6 +116,12 @@ data class SessionStarted(
     val providerSessionId: String,
     val signerSubject: String,
     val proofingMethod: String?,
+    val documentVersion: Int,
+    val documentSha256: Sha256,
+)
+
+data class SignRequest(
+    val documentSha256: Sha256,
 )
 
 data class Signed(

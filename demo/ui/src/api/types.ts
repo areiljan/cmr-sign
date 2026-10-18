@@ -10,7 +10,10 @@ export interface Envelope {format: SignatureFormat; id: Id<Envelope>; proofingMe
 export interface EnvelopeCreationRequest {contentType: MediaType; format: SignatureFormat; payload: string; signerClass: SignerClass}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.SessionStarted
-export interface SessionStarted {id: Id<Envelope>; proofingMethod?: string; providerSessionId: string; signerSubject: string; state: EnvelopeState}
+export interface SessionStarted {documentSha256: Sha256; documentVersion: number; id: Id<Envelope>; proofingMethod?: string; providerSessionId: string; signerSubject: string; state: EnvelopeState}
+
+// class io.github.areiljan.cmrsign.demo.envelopes.SignRequest
+export interface SignRequest {documentSha256: Sha256}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.Signed
 export interface Signed {documentVersion: number; id: Id<Envelope>; sha256: Sha256; state: EnvelopeState; verdict: any}
