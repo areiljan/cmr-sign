@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.main.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.test.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/service/cmr-sign.service.iml" filepath="$PROJECT_DIR$/.idea/modules/service/cmr-sign.service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.test.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.main.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.test.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core.iml" filepath="$PROJECT_DIR$/.idea/modules/core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/io.github.areiljan.cmr-sign.core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/io.github.areiljan.cmr-sign.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/io.github.areiljan.cmr-sign.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/io.github.areiljan.cmr-sign.core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/io.github.areiljan.cmr-sign.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/io.github.areiljan.cmr-sign.core.test.iml" />
+    </modules>
+  </component>
+</project>
