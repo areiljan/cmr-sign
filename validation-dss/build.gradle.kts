@@ -1,5 +1,7 @@
 plugins {
     kotlin("jvm")
+    `java-library`
+    `maven-publish`
 }
 
 group = "io.github.areiljan"
@@ -17,7 +19,7 @@ sourceSets.test {
 }
 
 dependencies {
-    implementation(project(":core"))
+    api(project(":core"))
 
     implementation(platform("eu.europa.ec.joinup.sd-dss:dss-bom:6.5.1"))
     implementation("eu.europa.ec.joinup.sd-dss:dss-validation")
@@ -33,6 +35,14 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.16")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
 }
 
 tasks.test { useJUnitPlatform() }
