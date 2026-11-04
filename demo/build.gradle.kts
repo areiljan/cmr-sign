@@ -23,6 +23,7 @@ sourceSets.test {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":pades"))
     implementation(project(":validation-dss"))
     implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
 

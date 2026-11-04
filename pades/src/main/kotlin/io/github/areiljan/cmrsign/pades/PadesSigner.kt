@@ -1,6 +1,8 @@
-package io.github.areiljan.cmrsign
+package io.github.areiljan.cmrsign.pades
 
-import org.apache.pdfbox.Loader
+import io.github.areiljan.cmrsign.SignerIdentity
+import io.github.areiljan.cmrsign.SigningProvider
+import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.DERNull
@@ -48,7 +50,7 @@ class PadesSigner private constructor(
 
     fun sign(pdf: ByteArray, signerName: String): ByteArray {
         val output = ByteArrayOutputStream()
-        Loader.loadPDF(pdf).use { document ->
+        PDDocument.load(pdf).use { document ->
             val signature = signatureFor(signerName)
             document.addSignature(signature) { content -> buildCms(content.readBytes()) }
             document.saveIncremental(output)

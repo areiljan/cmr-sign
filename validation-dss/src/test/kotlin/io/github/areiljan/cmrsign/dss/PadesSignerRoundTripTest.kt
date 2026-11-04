@@ -5,7 +5,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.DocumentToValidate
 import io.github.areiljan.cmrsign.Indication
 import io.github.areiljan.cmrsign.MediaType
-import io.github.areiljan.cmrsign.PadesSigner
+import io.github.areiljan.cmrsign.pades.PadesSigner
 import io.github.areiljan.cmrsign.Qualification
 import io.github.areiljan.cmrsign.certificate
 import io.github.areiljan.cmrsign.expiredCertificate

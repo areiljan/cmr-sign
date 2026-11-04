@@ -26,9 +26,7 @@ sourceSets.test {
 }
 
 dependencies {
-    implementation("org.apache.pdfbox:pdfbox:3.0.4")
-    implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
-
+    testImplementation("org.bouncycastle:bcpkix-jdk18on:1.86")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-2")

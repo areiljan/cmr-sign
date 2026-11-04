@@ -5,7 +5,7 @@ import io.github.areiljan.cmrsign.Envelope as DomainEnvelope
 import io.github.areiljan.cmrsign.EnvelopeState
 import io.github.areiljan.cmrsign.Id
 import io.github.areiljan.cmrsign.MediaType
-import io.github.areiljan.cmrsign.PadesSigner
+import io.github.areiljan.cmrsign.pades.PadesSigner
 import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass

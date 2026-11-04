@@ -10,6 +10,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.main.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.test.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.iml" filepath="$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.main.iml" filepath="$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.test.iml" filepath="$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service/cmr-sign.service.iml" filepath="$PROJECT_DIR$/.idea/modules/service/cmr-sign.service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.test.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.iml" />
