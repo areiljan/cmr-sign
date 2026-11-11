@@ -1,4 +1,4 @@
-package io.github.areiljan.cmrsign.dss
+package io.github.areiljan.cmrsign.cades
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
@@ -6,14 +6,15 @@ import io.github.areiljan.cmrsign.DocumentToValidate
 import io.github.areiljan.cmrsign.Indication
 import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Qualification
+import io.github.areiljan.cmrsign.pades.PadesValidator
 import org.junit.jupiter.api.Test
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
-class DssPadesValidatorTest {
+class DssCmsValidatorTest {
     @Test
     fun `a valid signed pdf passes and derives NA`() {
-        val verdict = DssPadesValidator(listOf(signerCertificate()))
+        val verdict = PadesValidator(DssCmsValidator(listOf(signerCertificate())))
             .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
 
         expect(verdict.indication).toEqual(Indication.TOTAL_PASSED)
@@ -24,7 +25,7 @@ class DssPadesValidatorTest {
     fun `reports who signed`() {
         val certificate = signerCertificate()
 
-        val verdict = DssPadesValidator(listOf(certificate))
+        val verdict = PadesValidator(DssCmsValidator(listOf(certificate)))
             .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
 
         expect(verdict.signer.subjectName).toEqual(certificate.subjectX500Principal.name)

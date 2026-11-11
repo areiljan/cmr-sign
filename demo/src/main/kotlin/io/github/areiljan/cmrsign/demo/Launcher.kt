@@ -2,7 +2,8 @@ package io.github.areiljan.cmrsign.demo
 
 import io.github.areiljan.cmrsign.SigningProvider
 import io.github.areiljan.cmrsign.Validator
-import io.github.areiljan.cmrsign.dss.DssPadesValidator
+import io.github.areiljan.cmrsign.cades.DssCmsValidator
+import io.github.areiljan.cmrsign.pades.PadesValidator
 import io.github.areiljan.cmrsign.demo.db.initDB
 import io.github.areiljan.cmrsign.demo.envelopes.EnvelopeRoutes
 import io.github.areiljan.cmrsign.demo.reference.ReferenceSigningProvider
@@ -26,7 +27,7 @@ fun main() {
     Server().apply {
         val signingProvider = ReferenceSigningProvider()
         register<SigningProvider>(signingProvider)
-        register<Validator>(DssPadesValidator(listOf(signingProvider.certificate)))
+        register<Validator>(PadesValidator(DssCmsValidator(listOf(signingProvider.certificate))))
         initDB()
         use<RequestTransactionHandler>()
         use<JsonBody>()

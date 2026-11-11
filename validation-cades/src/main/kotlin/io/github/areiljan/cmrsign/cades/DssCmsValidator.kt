@@ -1,4 +1,4 @@
-package io.github.areiljan.cmrsign.dss
+package io.github.areiljan.cmrsign.cades
 
 import eu.europa.esig.dss.enumerations.Indication as DssIndication
 import eu.europa.esig.dss.enumerations.SignatureQualification as DssQualification
@@ -8,19 +8,19 @@ import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource
 import eu.europa.esig.dss.validation.SignedDocumentValidator
 import eu.europa.esig.dss.validation.reports.Reports
-import io.github.areiljan.cmrsign.DocumentToValidate
+import io.github.areiljan.cmrsign.CmsValidator
 import io.github.areiljan.cmrsign.Indication
 import io.github.areiljan.cmrsign.Qualification
 import io.github.areiljan.cmrsign.SignerIdentity
-import io.github.areiljan.cmrsign.Validator
 import io.github.areiljan.cmrsign.Verdict
 import java.security.cert.X509Certificate
 
-class DssPadesValidator(
+class DssCmsValidator(
     private val trustedCertificates: List<X509Certificate>,
-) : Validator {
-    override fun validate(document: DocumentToValidate): Verdict {
-        val validator = SignedDocumentValidator.fromDocument(InMemoryDocument(document.bytes))
+) : CmsValidator {
+    override fun validate(cms: ByteArray, signedContent: ByteArray): Verdict {
+        val validator = SignedDocumentValidator.fromDocument(InMemoryDocument(cms))
+        validator.setDetachedContents(listOf(InMemoryDocument(signedContent)))
         val trusted = CommonTrustedCertificateSource().apply {
             trustedCertificates.forEach { addCertificate(CertificateToken(it)) }
         }
@@ -30,7 +30,7 @@ class DssPadesValidator(
 
         val reports = validator.validateDocument()
         val simple = reports.simpleReport
-        val id = requireNotNull(simple.firstSignatureId) { "no signature found in the document" }
+        val id = requireNotNull(simple.firstSignatureId) { "no signature found in the CMS" }
 
         return Verdict.from(
             indication = indicationOf(simple.getIndication(id)),

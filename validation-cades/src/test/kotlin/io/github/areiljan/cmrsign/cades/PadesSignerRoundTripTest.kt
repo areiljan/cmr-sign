@@ -1,4 +1,4 @@
-package io.github.areiljan.cmrsign.dss
+package io.github.areiljan.cmrsign.cades
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
@@ -6,6 +6,7 @@ import io.github.areiljan.cmrsign.DocumentToValidate
 import io.github.areiljan.cmrsign.Indication
 import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.pades.PadesSigner
+import io.github.areiljan.cmrsign.pades.PadesValidator
 import io.github.areiljan.cmrsign.Qualification
 import io.github.areiljan.cmrsign.certificate
 import io.github.areiljan.cmrsign.expiredCertificate
@@ -21,7 +22,7 @@ class PadesSignerRoundTripTest {
 
     @Test
     fun `sign pdf and validate`() {
-        var verdict = DssPadesValidator(listOf(signingCertificate))
+        var verdict = PadesValidator(DssCmsValidator(listOf(signingCertificate)))
             .validate(DocumentToValidate(signed, MediaType.PDF))
 
         expect(verdict.indication).toEqual(Indication.TOTAL_PASSED)
@@ -29,13 +30,13 @@ class PadesSignerRoundTripTest {
         expect(verdict.qualification).toEqual(Qualification.NA)
         expect(verdict.signer.subjectName).toEqual(signingCertificate.subjectX500Principal.name)
 
-        verdict = DssPadesValidator(emptyList())
+        verdict = PadesValidator(DssCmsValidator(emptyList()))
             .validate(DocumentToValidate(signed, MediaType.PDF))
         expect(verdict.indication).toEqual(Indication.INDETERMINATE)
         expect(verdict.subIndication).toEqual("NO_CERTIFICATE_CHAIN_FOUND")
 
         val tampered = tamperTitle(signed)
-        verdict = DssPadesValidator(listOf(signingCertificate))
+        verdict = PadesValidator(DssCmsValidator(listOf(signingCertificate)))
             .validate(DocumentToValidate(tampered, MediaType.PDF))
         expect(verdict.indication).toEqual(Indication.TOTAL_FAILED)
         expect(verdict.subIndication).toEqual("HASH_FAILURE")
@@ -44,7 +45,7 @@ class PadesSignerRoundTripTest {
         val expiredSigningCertificate = expiredCertificate(expiredKeyPair)
         val expiredSigned = PadesSigner(expiredKeyPair.private, listOf(expiredSigningCertificate))
             .sign(unsignedPdf(), "Test Signer")
-        verdict = DssPadesValidator(listOf(expiredSigningCertificate))
+        verdict = PadesValidator(DssCmsValidator(listOf(expiredSigningCertificate)))
             .validate(DocumentToValidate(expiredSigned, MediaType.PDF))
         expect(verdict.indication).toEqual(Indication.INDETERMINATE)
         expect(verdict.subIndication).toEqual("SIG_CONSTRAINTS_FAILURE")

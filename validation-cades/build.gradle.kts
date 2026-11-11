@@ -23,8 +23,7 @@ dependencies {
 
     fun dss(module: String) = "eu.europa.ec.joinup.sd-dss:dss-$module:6.5.1"
     implementation(dss("validation"))
-    implementation(dss("pades"))
-    implementation(dss("pades-openpdf"))
+    implementation(dss("cades"))
     implementation(dss("policy-jaxb"))
     implementation(dss("cms-object"))
     implementation(dss("utils-apache-commons"))
