@@ -11,12 +11,19 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.io.IOException
+import java.lang.System.currentTimeMillis
+import java.net.http.HttpResponse.BodyHandler
+import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.security.MessageDigest
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 /**
  * [SigningProvider] backed by a Cloud Signature Consortium (CSC) API v2 server.
@@ -90,7 +97,7 @@ class CscSigningProvider(
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .build()
-        val response = http.send(request, HttpResponse.BodyHandlers.ofString())
+        val response = http.send(request, ofString())
         if (response.statusCode() !in 200..299) {
             throw IOException("CSC call to $path failed with HTTP ${response.statusCode()}: ${response.body()}")
         }
