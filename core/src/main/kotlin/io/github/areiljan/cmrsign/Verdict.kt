@@ -9,7 +9,7 @@ class Verdict private constructor(
     companion object {
         fun from(
             indication: Indication,
-            subIndication: String?, // the reason when indication is TOTAL_PASSED
+            subIndication: String?, // the reason when indication is not TOTAL_PASSED
             qualification: Qualification,
             signer: SignerIdentity,
         ): Verdict = Verdict(indication, subIndication, qualification, signer)
