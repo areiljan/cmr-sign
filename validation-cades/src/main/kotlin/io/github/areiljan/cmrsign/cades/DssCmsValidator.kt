@@ -57,9 +57,14 @@ class DssCmsValidator(
         else -> throw UnsupportedOperationException("unsupported DSS indication: $dss")
     }
 
-    private fun qualificationOf(dss: DssQualification?): Qualification = when (dss) {
-        null,
-        DssQualification.NA -> Qualification.NA
-        else -> throw UnsupportedOperationException("unsupported DSS qualification: $dss")
-    }
+}
+
+internal fun qualificationOf(dss: DssQualification?): Qualification = when (dss) {
+    DssQualification.QESIG -> Qualification.QESIG
+    DssQualification.QESEAL -> Qualification.QESEAL
+    DssQualification.UNKNOWN_QC_QSCD -> Qualification.QES
+    DssQualification.ADESIG, DssQualification.ADESIG_QC -> Qualification.ADESIG
+    DssQualification.ADESEAL, DssQualification.ADESEAL_QC -> Qualification.ADESEAL
+    DssQualification.UNKNOWN, DssQualification.UNKNOWN_QC -> Qualification.ADES
+    else -> Qualification.NA
 }
