@@ -43,6 +43,15 @@ class DssCmsValidatorTest {
         expect(verdict.subIndication).toEqual("HASH_FAILURE")
     }
 
+    @Test
+    fun `an untrusted chain is indeterminate`() {
+        val verdict = PadesValidator(DssCmsValidator(trustedCertificates = emptyList()))
+            .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
+
+        expect(verdict.indication).toEqual(Indication.INDETERMINATE)
+        expect(verdict.subIndication).toEqual("NO_CERTIFICATE_CHAIN_FOUND")
+    }
+
     private fun signerCertificate(): X509Certificate =
         resource("/signer-cert.pem").use {
             CertificateFactory.getInstance("X.509").generateCertificate(it) as X509Certificate
