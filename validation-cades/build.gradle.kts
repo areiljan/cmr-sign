@@ -27,6 +27,8 @@ dependencies {
     implementation(dss("policy-jaxb"))
     implementation(dss("cms-object"))
     implementation(dss("utils-apache-commons"))
+    implementation(dss("service"))
+    implementation(dss("crl-parser-stream"))
 
     testImplementation(project(":pades"))
     testImplementation(project(":csc-provider"))

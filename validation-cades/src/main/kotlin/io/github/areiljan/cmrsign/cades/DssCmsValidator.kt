@@ -5,6 +5,8 @@ import eu.europa.esig.dss.enumerations.SignatureQualification as DssQualificatio
 import eu.europa.esig.dss.model.InMemoryDocument
 import eu.europa.esig.dss.model.x509.CertificateToken
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier
+import eu.europa.esig.dss.service.crl.OnlineCRLSource
+import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource
 import eu.europa.esig.dss.validation.SignedDocumentValidator
 import eu.europa.esig.dss.validation.reports.Reports
@@ -25,7 +27,11 @@ class DssCmsValidator(
             trustedCertificates.forEach { addCertificate(CertificateToken(it)) }
         }
         validator.setCertificateVerifier(
-            CommonCertificateVerifier().apply { setTrustedCertSources(trusted) },
+            CommonCertificateVerifier().apply {
+                setTrustedCertSources(trusted)
+                ocspSource = OnlineOCSPSource()
+                crlSource = OnlineCRLSource()
+            },
         )
 
         val reports = validator.validateDocument()

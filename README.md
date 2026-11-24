@@ -71,7 +71,7 @@ CSC_CLIENT_ID=... CSC_USERNAME=... CSC_PASSWORD=... CSC_CREDENTIAL_ID=... \
 ./gradlew :validation-cades:test --tests '*CscProbe*' --rerun
 ```
 
-SSL.com's eSigner sandbox works with its [public demo account](https://www.ssl.com/guide/esigner-demo-credentials-and-certificates/) and its e-seal credential, which needs no OTP. The result is `INDETERMINATE` because DSS does not fetch revocation data yet.
+SSL.com's eSigner sandbox works with its [public demo account](https://www.ssl.com/guide/esigner-demo-credentials-and-certificates/) and its e-seal credential, which needs no OTP. The result is `TOTAL_PASSED` with qualification `NA`: the chain ends at SSL.com's development root, which is not on an EU trusted list.
 
 ## Demo flow
 
@@ -110,14 +110,15 @@ Platform routes require `X-Api-Key`; the health check is public.
 - [x] `efti` module: derived `eFTI65` / `eFTI115` / `eFTI84` signature status
 - [x] Stored ETSI validation report, referenced by `validationReportId`
 - [ ] Organisational seal (AdESeal) through the same pipeline
-- [ ] Revocation checks, webhooks, OpenAPI description
+- [x] Online revocation checks (OCSP/CRL)
+- [ ] Webhooks, OpenAPI description
 
 Out of scope: acting as a QTSP, a full eFTI CMDS implementation, long-term validation.
 
 ## Limitations
 
 - **Development identity only.** The reference provider is self-signed and keeps a demo key in memory. Its verdict is `NA`, and the output is **not a legally valid eIDAS signature**. Do not use it as one.
-- No QTSP, trusted-list or revocation integration yet; validation uses a fixed trust source supplied by the caller.
+- No trusted-list integration yet; validation uses a fixed trust source supplied by the caller and fetches revocation data online (OCSP, falling back to CRL).
 - Provider sessions are in memory; restarting between start and sign loses the session.
 
 ## License

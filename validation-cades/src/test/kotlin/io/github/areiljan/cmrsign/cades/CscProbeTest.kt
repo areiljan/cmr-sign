@@ -1,6 +1,6 @@
 package io.github.areiljan.cmrsign.cades
 
-import ch.tutteli.atrium.api.fluent.en_GB.notToEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.DocumentToValidate
 import io.github.areiljan.cmrsign.Indication
@@ -25,7 +25,7 @@ class CscProbeTest {
     )
 
     @Test
-    fun `a real csc provider signs a pdf that DSS does not reject`() {
+    fun `a real csc provider signs a pdf that DSS accepts`() {
         val session = provider.startSession("probe")
         val identity = provider.completeSession(session)
 
@@ -37,7 +37,7 @@ class CscProbeTest {
         File("build/csc-probe-report.xml").writeText(verdict.report)
         println("CSC probe: ${identity.subjectName} -> ${verdict.indication} ${verdict.subIndication} ${verdict.qualification}")
 
-        expect(verdict.indication).notToEqual(Indication.TOTAL_FAILED)
+        expect(verdict.indication).toEqual(Indication.TOTAL_PASSED)
     }
 
     private fun env(name: String) = requireNotNull(System.getenv(name)) { "$name is not set" }
