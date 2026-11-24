@@ -16,7 +16,10 @@ export interface SessionStarted {documentSha256: Sha256; documentVersion: number
 export interface SignRequest {documentSha256: Sha256}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.Signed
-export interface Signed {documentVersion: number; id: Id<Envelope>; sha256: Sha256; state: EnvelopeState; verdict: any}
+export interface Signed {documentVersion: number; id: Id<Envelope>; sha256: Sha256; state: EnvelopeState; validationReportId: Id<ValidationReport>; verdict: any}
+
+// class io.github.areiljan.cmrsign.demo.envelopes.ValidationReport
+export interface ValidationReport {content: string; documentVersion: number; envelopeId: Id<Envelope>; id: Id<ValidationReport>}
 
 // class io.github.areiljan.cmrsign.MediaType
 export type MediaType = string

@@ -29,3 +29,10 @@ data class Document(
     val content: ByteArray,
     override val id: Id<Document> = Id('D'),
 ): Entity<Document>
+
+data class ValidationReport(
+    val envelopeId: Id<DomainEnvelope>,
+    val documentVersion: Int,
+    val content: String,
+    override val id: Id<ValidationReport> = Id('R'),
+): Entity<ValidationReport>

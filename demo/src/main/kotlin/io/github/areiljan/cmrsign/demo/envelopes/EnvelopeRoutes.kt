@@ -27,6 +27,7 @@ import java.util.Base64
 class EnvelopeRoutes(
     private val envelopes: EnvelopeRepository,
     private val documents: DocumentRepository,
+    private val reports: ValidationReportRepository,
     private val signingProvider: SigningProvider,
     private val validator: Validator,
 ) {
@@ -88,9 +89,11 @@ class EnvelopeRoutes(
                 content = signed,
             )
         )
+        val report = ValidationReport(id, version, verdict.report)
+        reports.save(report)
         val updated = envelope.copy(state = signedState.validate())
         envelopes.save(updated)
-        return Signed(updated.id, updated.state, version, sha256, verdict)
+        return Signed(updated.id, updated.state, version, sha256, verdict, report.id)
     }
 
     @GET("/:id/documents/:version")
@@ -100,6 +103,13 @@ class EnvelopeRoutes(
         exchange.header("ETag", etag)
         if (exchange.header("If-None-Match") == etag) throw NotModifiedException()
         exchange.send(OK, document.content, document.contentType.value)
+    }
+
+    @GET("/:id/reports/:reportId")
+    fun report(exchange: HttpExchange, @PathParam id: Id<DomainEnvelope>, @PathParam reportId: Id<ValidationReport>) {
+        val report = reports.get(reportId)
+        if (report.envelopeId != id) throw NotFoundException("no report $reportId for $id")
+        exchange.send(OK, report.content, "application/xml")
     }
 }
 
@@ -130,4 +140,5 @@ data class Signed(
     val documentVersion: Int,
     val sha256: Sha256,
     val verdict: Verdict,
+    val validationReportId: Id<ValidationReport>,
 )

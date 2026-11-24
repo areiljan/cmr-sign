@@ -8,6 +8,7 @@ import io.github.areiljan.cmrsign.Validator
 import io.github.areiljan.cmrsign.Verdict
 import io.github.areiljan.cmrsign.demo.envelopes.DocumentRepository
 import io.github.areiljan.cmrsign.demo.envelopes.EnvelopeRepository
+import io.github.areiljan.cmrsign.demo.envelopes.ValidationReportRepository
 import io.github.areiljan.cmrsign.demo.reference.ReferenceSigningProvider
 import io.mockk.clearAllMocks
 import io.mockk.mockk
@@ -19,6 +20,7 @@ abstract class BaseMocks {
 
         val envelopes = mock<EnvelopeRepository>(relaxed = true)
         val documents = mock<DocumentRepository>(relaxed = true)
+        val reports = mock<ValidationReportRepository>(relaxed = true)
         val signingProvider = ReferenceSigningProvider()
 
         init {

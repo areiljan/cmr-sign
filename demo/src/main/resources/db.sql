@@ -3,3 +3,4 @@
 
 --include envelopes.sql
 --include documents.sql
+--include validationReports.sql

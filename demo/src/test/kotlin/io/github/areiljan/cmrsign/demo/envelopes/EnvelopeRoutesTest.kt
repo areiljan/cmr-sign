@@ -136,6 +136,9 @@ class EnvelopeRoutesTest : BaseMocks() {
         val savedDocument = slot<Document>()
         every { documents.save(capture(savedDocument)) } returns 1
 
+        val savedReport = slot<ValidationReport>()
+        every { reports.save(capture(savedReport)) } returns 1
+
         val signed = routes.sign(envelope.id, SignRequest(document.sha256))
 
         expect(signed.state).toEqual(EnvelopeState.VALIDATED)
@@ -144,6 +147,29 @@ class EnvelopeRoutesTest : BaseMocks() {
         expect(savedDocument.captured.version).toEqual(2)
         expect(savedDocument.captured.sha256).toEqual(Sha256.of(savedDocument.captured.content))
         expect(savedEnvelope.captured.state).toEqual(EnvelopeState.VALIDATED)
+        expect(savedReport.captured.id).toEqual(signed.validationReportId)
+        expect(savedReport.captured.documentVersion).toEqual(2)
+        expect(savedReport.captured.content).toEqual("report")
+    }
+
+    @Test
+    fun `serves the stored validation report`() {
+        val envelopeId = Id<DomainEnvelope>()
+        val report = ValidationReport(envelopeId, 2, "<ValidationReport/>")
+        every { reports.get(report.id) } returns report
+        val exchange = mockk<HttpExchange>(relaxed = true)
+
+        routes.report(exchange, envelopeId, report.id)
+
+        verify { exchange.send(OK, "<ValidationReport/>", "application/xml") }
+    }
+
+    @Test
+    fun `does not serve a report of another envelope`() {
+        val report = ValidationReport(Id(), 2, "<ValidationReport/>")
+        every { reports.get(report.id) } returns report
+
+        expect { routes.report(mockk(relaxed = true), Id(), report.id) }.toThrow<NotFoundException>()
     }
 
     private fun unsignedPdf(): ByteArray =
