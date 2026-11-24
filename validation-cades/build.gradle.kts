@@ -29,6 +29,7 @@ dependencies {
     implementation(dss("utils-apache-commons"))
 
     testImplementation(project(":pades"))
+    testImplementation(project(":csc-provider"))
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.86")
     testImplementation("ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-2")
     testImplementation(platform("org.junit:junit-bom:6.0.0"))

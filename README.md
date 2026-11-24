@@ -60,6 +60,19 @@ docker compose up -d db
 # UI: cd demo/ui && npm install && npm run dev  (http://localhost:8000)
 ```
 
+### Probe a real CSC provider
+
+`CscProbeTest` signs a PDF through a real CSC API v1 provider and validates it with DSS. It runs only when `CSC_BASE_URL` is set and writes `validation-cades/build/csc-probe-signed.pdf` and `csc-probe-report.xml`.
+
+```bash
+CSC_BASE_URL=https://cs-try.ssl.com/csc/v0 \
+CSC_TOKEN_URL=https://oauth-sandbox.ssl.com/oauth2/token \
+CSC_CLIENT_ID=... CSC_USERNAME=... CSC_PASSWORD=... CSC_CREDENTIAL_ID=... \
+./gradlew :validation-cades:test --tests '*CscProbe*' --rerun
+```
+
+SSL.com's eSigner sandbox works with its [public demo account](https://www.ssl.com/guide/esigner-demo-credentials-and-certificates/) and its e-seal credential, which needs no OTP. The result is `INDETERMINATE` because DSS does not fetch revocation data yet.
+
 ## Demo flow
 
 1. Upload `core/src/mocks/resources/example-unsigned.pdf`.
@@ -90,7 +103,8 @@ Platform routes require `X-Api-Key`; the health check is public.
 
 ## Roadmap
 
-- [ ] Provider-agnostic CSC/QTSP adapter and a redesigned `SigningProvider` (certificate chain, algorithm selection, asynchronous authorization)
+- [x] CSC API v1 adapter, probed against SSL.com's eSigner sandbox
+- [ ] Redesigned `SigningProvider` (algorithm selection, asynchronous authorization, OTP)
 - [ ] One PDFBox 2.x line and validation of the extracted detached CMS
 - [ ] Ad hoc signing hook for platform-owned links
 - [x] `efti` module: derived `eFTI65` / `eFTI115` / `eFTI84` signature status
