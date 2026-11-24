@@ -84,6 +84,7 @@ Platform routes require `X-Api-Key`; the health check is public.
 | `POST` | `/api/envelopes/{id}/start` | Start the reference signer session |
 | `POST` | `/api/envelopes/{id}/sign` | Sign the reviewed hash, validate, return the verdict |
 | `GET` | `/api/envelopes/{id}/documents/{version}` | Download a version; `ETag` is the SHA-256 |
+| `GET` | `/api/envelopes/{id}/reports/{reportId}` | Download the stored ETSI validation report (XML) |
 | `GET` | `/health` | Liveness |
 
 ## Roadmap
@@ -92,7 +93,7 @@ Platform routes require `X-Api-Key`; the health check is public.
 - [ ] One PDFBox 2.x line and validation of the extracted detached CMS
 - [ ] Ad hoc signing hook for platform-owned links
 - [x] `efti` module: derived `eFTI65` / `eFTI115` / `eFTI84` signature status
-- [ ] Stored validation report referenced by the eFTI status
+- [x] Stored ETSI validation report, referenced by `validationReportId`
 - [ ] Organisational seal (AdESeal) through the same pipeline
 - [ ] Revocation checks, webhooks, OpenAPI description
 
