@@ -91,7 +91,8 @@ Platform routes require `X-Api-Key`; the health check is public.
 - [ ] Provider-agnostic CSC/QTSP adapter and a redesigned `SigningProvider` (certificate chain, algorithm selection, asynchronous authorization)
 - [ ] One PDFBox 2.x line and validation of the extracted detached CMS
 - [ ] Ad hoc signing hook for platform-owned links
-- [ ] `efti` module: derived `eFTI65` / `eFTI115` / `eFTI84` marker and stored validation report
+- [x] `efti` module: derived `eFTI65` / `eFTI115` / `eFTI84` signature status
+- [ ] Stored validation report referenced by the eFTI status
 - [ ] Organisational seal (AdESeal) through the same pipeline
 - [ ] Revocation checks, webhooks, OpenAPI description
 
