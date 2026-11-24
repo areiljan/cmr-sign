@@ -6,7 +6,7 @@ Built around a provider seam, so the signing key can live in a trust service
 rather than in your application.
 
 > **Status:** working prototype. Signing and validation run end to end with a
-> development identity. Real trust-service integration and eFTI mapping are on
+> development identity. Real trust-service integration and the DigiCMR integration are on
 > the [roadmap](#roadmap).
 
 ## What works today
@@ -23,6 +23,7 @@ rather than in your application.
 
 - **Bind the signature to what was reviewed:** signing uses the document SHA-256 and requires explicit consent.
 - **Keep every version:** signed documents are stored as immutable versions; the `ETag` is the SHA-256.
+- **Derive the eFTI marker:** each request declares its role (`EFTI65_SENDER`, `EFTI115_CARRIER`, `EFTI84_CONSIGNEE`); signing returns and stores the derived status, which attests only `TOTAL_PASSED` with an advanced or qualified level. The development identity gives `NA`, so the demo shows "not attested".
 - **Try it in the browser:** create → start → sign → verdict.
 
 ## Design
@@ -79,10 +80,10 @@ Platform routes require `X-Api-Key`; the health check is public.
 
 | Method | Path | Purpose |
 |---|---|---|
-| `POST` | `/api/envelopes` | Create a request; JSON body with a base64 `payload` |
+| `POST` | `/api/envelopes` | Create a request; JSON body with a base64 `payload` and an `eftiRole` |
 | `GET` | `/api/envelopes/{id}` | Read the request state |
 | `POST` | `/api/envelopes/{id}/start` | Start the reference signer session |
-| `POST` | `/api/envelopes/{id}/sign` | Sign the reviewed hash, validate, return the verdict |
+| `POST` | `/api/envelopes/{id}/sign` | Sign the reviewed hash, validate, return the verdict and eFTI status |
 | `GET` | `/api/envelopes/{id}/documents/{version}` | Download a version; `ETag` is the SHA-256 |
 | `GET` | `/api/envelopes/{id}/reports/{reportId}` | Download the stored ETSI validation report (XML) |
 | `GET` | `/health` | Liveness |
