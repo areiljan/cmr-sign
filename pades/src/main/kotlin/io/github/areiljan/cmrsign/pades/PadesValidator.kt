@@ -16,7 +16,7 @@ class PadesValidator(private val cmsValidator: CmsValidator) : Validator {
             val cms = ASN1InputStream(signature.getContents(pdf)).use { asn1 -> asn1.readObject().encoded }
             val verdict = cmsValidator.validate(cms, signature.getSignedContent(pdf))
             if (coversWholeFile(pdf, signature.byteRange)) verdict
-            else Verdict.from(Indication.TOTAL_FAILED, FORMAT_FAILURE, verdict.qualification, verdict.signer)
+            else Verdict.from(Indication.TOTAL_FAILED, FORMAT_FAILURE, verdict.qualification, verdict.signer, verdict.report)
         }
     }
 

@@ -37,6 +37,7 @@ class DssCmsValidator(
             subIndication = simple.getSubIndication(id)?.name,
             qualification = qualificationOf(simple.getSignatureQualification(id)),
             signer = signerIdentity(reports, id),
+            report = reports.xmlValidationReport,
         )
     }
 

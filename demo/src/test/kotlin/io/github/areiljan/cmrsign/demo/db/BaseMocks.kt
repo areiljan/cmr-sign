@@ -29,6 +29,7 @@ abstract class BaseMocks {
                     null,
                     Qualification.NA,
                     SignerIdentity("Reference Signer"),
+                    "report",
                 )
             })
         }

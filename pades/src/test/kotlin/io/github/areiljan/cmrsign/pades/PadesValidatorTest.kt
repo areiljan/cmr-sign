@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test
 class PadesValidatorTest {
     private val keyPair = keyPair()
     private val signed = PadesSigner(keyPair.private, listOf(certificate(keyPair))).sign(unsignedPdf(), "Test Signer")
-    private val passed = Verdict.from(Indication.TOTAL_PASSED, null, Qualification.NA, SignerIdentity("Test Signer"))
+    private val passed = Verdict.from(Indication.TOTAL_PASSED, null, Qualification.NA, SignerIdentity("Test Signer"), "report")
     private val validator = PadesValidator(CmsValidator { _, _ -> passed })
 
     @Test

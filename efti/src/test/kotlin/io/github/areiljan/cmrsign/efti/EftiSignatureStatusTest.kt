@@ -37,7 +37,7 @@ class EftiSignatureStatusTest {
 
     private fun status(indication: Indication, qualification: Qualification) = EftiSignatureStatus.from(
         EftiDataElement.EFTI65_SENDER,
-        Verdict.from(indication, null, qualification, SignerIdentity("CN=Sender")),
+        Verdict.from(indication, null, qualification, SignerIdentity("CN=Sender"), "report"),
         "report",
     )
 }

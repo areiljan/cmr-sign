@@ -1,5 +1,6 @@
 package io.github.areiljan.cmrsign.cades
 
+import ch.tutteli.atrium.api.fluent.en_GB.toContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.github.areiljan.cmrsign.DocumentToValidate
@@ -29,6 +30,14 @@ class DssCmsValidatorTest {
             .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
 
         expect(verdict.signer.subjectName).toEqual(certificate.subjectX500Principal.name)
+    }
+
+    @Test
+    fun `carries the ETSI validation report`() {
+        val verdict = PadesValidator(DssCmsValidator(listOf(signerCertificate())))
+            .validate(DocumentToValidate(validSignedPdf(), MediaType.PDF))
+
+        expect(verdict.report).toContain("<ValidationReport", "mainindication:total-passed")
     }
 
     @Test

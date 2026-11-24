@@ -8,7 +8,7 @@ class ValidatorTest {
     @Test
     fun `a fake validator is usable`() {
         val signer = SignerIdentity("Test Signer")
-        val validator = Validator { Verdict.from(Indication.TOTAL_PASSED, null, Qualification.NA, signer) }
+        val validator = Validator { Verdict.from(Indication.TOTAL_PASSED, null, Qualification.NA, signer, "report") }
 
         val verdict = validator.validate(DocumentToValidate(byteArrayOf(1), MediaType.PDF))
 
