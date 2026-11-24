@@ -24,8 +24,8 @@ import kotlin.test.assertTrue
 
 class CscSigningProviderTest {
     private lateinit var server: HttpServer
-    private val signHashBodies = mutableListOf<String>()
-    private val authorizeRequests = mutableListOf<String>()
+    private val requests = mutableListOf<Pair<String, String>>()
+    private val authorizations = mutableListOf<String?>()
 
     private val keyPair: KeyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
     private val certificate = selfSignedCertificate()
@@ -35,21 +35,15 @@ class CscSigningProviderTest {
     @BeforeEach
     fun start() {
         server = HttpServer.create(InetSocketAddress(0), 0).apply {
-            createContext("/credentials/info") { exchange ->
-                respond(exchange, """{"cert": {"certificates": ["${certificateBase64()}"]}}""")
-            }
-            createContext("/oauth2/authorize") { exchange ->
-                authorizeRequests.add(exchange.requestBody.readBytes().decodeToString())
-                respond(exchange, """{"SAD": "sad-123"}""")
-            }
-            createContext("/signatures/signHash") { exchange ->
-                signHashBodies.add(exchange.requestBody.readBytes().decodeToString())
-                respond(exchange, """{"signatures": ["${signatureBase64()}"]}""")
-            }
+            createContext("/oauth2/token") { respond(it, """{"access_token": "token-1"}""") }
+            createContext("/csc/v1/credentials/info") { respond(it, """{"cert": {"certificates": ["${certificateBase64()}"]}}""") }
+            createContext("/csc/v1/credentials/authorize") { respond(it, """{"SAD": "sad-123"}""") }
+            createContext("/csc/v1/signatures/signHash") { respond(it, """{"signatures": ["${signatureBase64()}"]}""") }
             start()
         }
         provider = CscSigningProvider(
-            baseUrl = "http://localhost:${server.address.port}",
+            baseUrl = "http://localhost:${server.address.port}/csc/v1",
+            tokenUrl = "http://localhost:${server.address.port}/oauth2/token",
             clientId = "test-client",
             username = "signer@example.com",
             password = "secret",
@@ -68,22 +62,30 @@ class CscSigningProviderTest {
     }
 
     @Test
-    fun `sign sends the sha-256 hash of the data to signHash`() {
+    fun `sign authorizes the hash and then signs it`() {
+        val hash = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest("data".toByteArray()))
+
         val signature = provider.sign(provider.startSession("signer"), "data".toByteArray())
+
         assertTrue(signature.isNotEmpty())
-        val expectedHash = MessageDigest.getInstance("SHA-256").digest("data".toByteArray())
-        assertTrue(signHashBodies.single().contains(Base64.getEncoder().encodeToString(expectedHash)))
+        assertEquals(listOf("/oauth2/token", "/csc/v1/credentials/authorize", "/csc/v1/signatures/signHash"), requests.map { it.first })
+        assertTrue(requests[1].second.contains(hash))
+        assertTrue(requests[2].second.contains("\"SAD\":\"sad-123\""))
+        assertTrue(requests[2].second.contains(hash))
+        assertTrue(requests[2].second.contains("\"signAlgo\":\"1.2.840.113549.1.1.11\""))
     }
 
     @Test
-    fun `sign authorizes before signing`() {
+    fun `calls the csc api with the oauth2 access token`() {
         provider.sign(provider.startSession("signer"), "data".toByteArray())
-        assertEquals(1, authorizeRequests.size)
-        assertTrue(authorizeRequests.single().contains("cred-1"))
-        assertEquals(1, signHashBodies.size)
+
+        assertTrue(requests[0].second.contains("grant_type=password"))
+        assertEquals(listOf(null, "Bearer token-1", "Bearer token-1"), authorizations)
     }
 
     private fun respond(exchange: HttpExchange, body: String) {
+        requests.add(exchange.requestURI.path to exchange.requestBody.readBytes().decodeToString())
+        authorizations.add(exchange.requestHeaders.getFirst("Authorization"))
         exchange.sendResponseHeaders(200, body.toByteArray().size.toLong())
         exchange.responseBody.use { it.write(body.toByteArray()) }
         exchange.close()

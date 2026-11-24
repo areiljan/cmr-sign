@@ -4,15 +4,13 @@ import io.github.areiljan.cmrsign.SignerIdentity
 import io.github.areiljan.cmrsign.SigningProvider
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import java.net.URI
+import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.io.IOException
-import java.lang.System.currentTimeMillis
-import java.net.http.HttpResponse.BodyHandler
+import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.security.MessageDigest
 import java.security.cert.CertificateFactory
@@ -20,22 +18,19 @@ import java.security.cert.X509Certificate
 import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 /**
- * [SigningProvider] backed by a Cloud Signature Consortium (CSC) API v2 server.
+ * [SigningProvider] backed by a Cloud Signature Consortium (CSC) API v1 server.
  */
 class CscSigningProvider(
     private val baseUrl: String,
+    private val tokenUrl: String,
     private val clientId: String,
     private val username: String,
     private val password: String,
     private val credentialId: String,
 ) : SigningProvider {
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val http = HttpClient.newHttpClient()
     private val certificateFactory = CertificateFactory.getInstance("X.509")
     private val sessions = ConcurrentHashMap.newKeySet<String>()
@@ -48,95 +43,101 @@ class CscSigningProvider(
 
     override fun completeSession(session: String): SignerIdentity {
         require(sessions.contains(session)) { "unknown session: $session" }
-        return identities.computeIfAbsent(session) { signerIdentity() }
+        return identities.computeIfAbsent(session) { signerIdentity(token()) }
     }
 
     override fun sign(session: String, dataToSign: ByteArray): ByteArray {
         require(sessions.contains(session)) { "unknown session: $session" }
-        val sad = authorize()
-        val hash = MessageDigest.getInstance("SHA-256").digest(dataToSign)
-        val request = SignHashRequest(
-            credentialID = credentialId,
-            SAD = sad,
-            hashes = listOf(Base64.getEncoder().encodeToString(hash)),
+        val token = token()
+        val hash = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(dataToSign))
+        val sad = json.decodeFromString<AuthorizeResponse>(
+            post("/credentials/authorize", json.encodeToString(AuthorizeRequest(credentialId, listOf(hash))), token),
+        ).SAD
+        val response = json.decodeFromString<SignHashResponse>(
+            post("/signatures/signHash", json.encodeToString(SignHashRequest(credentialId, sad, listOf(hash))), token),
         )
-        val response = json.decodeFromString<SignHashResponse>(post("/signatures/signHash", json.encodeToString(request)))
         require(response.signatures.isNotEmpty()) { "CSC server returned no signatures" }
         return Base64.getDecoder().decode(response.signatures.first())
     }
 
-    private fun signerIdentity(): SignerIdentity {
+    private fun signerIdentity(token: String): SignerIdentity {
         val info = json.decodeFromString<CredentialsInfoResponse>(
-            post("/credentials/info", json.encodeToString(CredentialsInfoRequest(credentialID = credentialId))),
+            post("/credentials/info", json.encodeToString(CredentialsInfoRequest(credentialId)), token),
         )
         val certificates = info.cert.certificates.map { encoded ->
             certificateFactory.generateCertificate(Base64.getDecoder().decode(encoded).inputStream()) as X509Certificate
         }
-        val leaf = certificates.first()
         return SignerIdentity(
-            subjectName = leaf.subjectX500Principal.name,
+            subjectName = certificates.first().subjectX500Principal.name,
             certificateChain = certificates,
             proofingMethod = "csc",
         )
     }
 
-    private fun authorize(): String {
-        val request = AuthorizeRequest(
-            clientID = clientId,
-            username = username,
-            password = password,
-            credentialID = credentialId,
-        )
-        val response = json.decodeFromString<AuthorizeResponse>(post("/oauth2/authorize", json.encodeToString(request)))
-        return response.SAD
+    private fun token(): String {
+        val form = mapOf("grant_type" to "password", "client_id" to clientId, "username" to username, "password" to password)
+            .entries.joinToString("&") { (key, value) -> "$key=${URLEncoder.encode(value, Charsets.UTF_8)}" }
+        val request = HttpRequest.newBuilder(URI.create(tokenUrl))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .POST(BodyPublishers.ofString(form))
+            .build()
+        return json.decodeFromString<TokenResponse>(send(request)).accessToken
     }
 
-    private fun post(path: String, body: String): String {
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create("$baseUrl$path"))
+    private fun post(path: String, body: String, token: String): String {
+        val request = HttpRequest.newBuilder(URI.create("$baseUrl$path"))
             .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .header("Authorization", "Bearer $token")
+            .POST(BodyPublishers.ofString(body))
             .build()
+        return send(request)
+    }
+
+    private fun send(request: HttpRequest): String {
         val response = http.send(request, ofString())
         if (response.statusCode() !in 200..299) {
-            throw IOException("CSC call to $path failed with HTTP ${response.statusCode()}: ${response.body()}")
+            throw IOException("CSC call to ${request.uri().path} failed with HTTP ${response.statusCode()}: ${response.body()}")
         }
         return response.body()
     }
 }
 
 @Serializable
-private data class CredentialsInfoRequest(@SerialName("credentialID") val credentialID: String)
+private data class TokenResponse(@SerialName("access_token") val accessToken: String)
 
 @Serializable
-private data class CredentialsInfoResponse(@SerialName("cert") val cert: CertificateInfo)
+private data class CredentialsInfoRequest(
+    val credentialID: String,
+    val certificates: String = "chain",
+)
 
 @Serializable
-private data class CertificateInfo(@SerialName("certificates") val certificates: List<String>)
+private data class CredentialsInfoResponse(val cert: CertificateInfo)
+
+@Serializable
+private data class CertificateInfo(val certificates: List<String>)
 
 @Serializable
 private data class AuthorizeRequest(
-    @SerialName("clientID") val clientID: String,
-    @SerialName("username") val username: String,
-    @SerialName("password") val password: String,
-    @SerialName("credentialID") val credentialID: String,
-    @SerialName("numSignatures") val numSignatures: Int = 1,
+    val credentialID: String,
+    val hash: List<String>,
+    val numSignatures: Int = 1,
 )
 
 @Serializable
-private data class AuthorizeResponse(@SerialName("SAD") val SAD: String)
+private data class AuthorizeResponse(val SAD: String)
 
 @Serializable
 private data class SignHashRequest(
-    @SerialName("credentialID") val credentialID: String,
-    @SerialName("SAD") val SAD: String,
-    @SerialName("hashes") val hashes: List<String>,
-    @SerialName("hashAlgorithm") val hashAlgorithm: String = SHA256_OID,
-    @SerialName("signAlgo") val signAlgo: String = SHA256_WITH_RSA_OID,
+    val credentialID: String,
+    val SAD: String,
+    val hash: List<String>,
+    val hashAlgo: String = SHA256_OID,
+    val signAlgo: String = SHA256_WITH_RSA_OID,
 )
 
 @Serializable
-private data class SignHashResponse(@SerialName("signatures") val signatures: List<String>)
+private data class SignHashResponse(val signatures: List<String>)
 
 private const val SHA256_OID = "2.16.840.1.101.3.4.2.1"
 private const val SHA256_WITH_RSA_OID = "1.2.840.113549.1.1.11"
