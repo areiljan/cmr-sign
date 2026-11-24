@@ -16,6 +16,7 @@ import io.github.areiljan.cmrsign.sign
 import io.github.areiljan.cmrsign.startSession
 import io.github.areiljan.cmrsign.validate
 import io.github.areiljan.cmrsign.efti.EftiDataElement
+import io.github.areiljan.cmrsign.efti.EftiSignatureStatus
 import klite.HttpExchange
 import klite.NotFoundException
 import klite.NotModifiedException
@@ -90,11 +91,12 @@ class EnvelopeRoutes(
                 content = signed,
             )
         )
-        val report = ValidationReport(id, version, verdict.report)
-        reports.save(report)
+        val reportId = Id<ValidationReport>('R')
+        val efti = EftiSignatureStatus.from(envelope.eftiRole, verdict, reportId.value)
+        reports.save(ValidationReport(id, version, verdict.report, efti.signatureType, reportId))
         val updated = envelope.copy(state = signedState.validate())
         envelopes.save(updated)
-        return Signed(updated.id, updated.state, version, sha256, verdict, report.id)
+        return Signed(updated.id, updated.state, version, sha256, verdict, efti)
     }
 
     @GET("/:id/documents/:version")
@@ -142,5 +144,5 @@ data class Signed(
     val documentVersion: Int,
     val sha256: Sha256,
     val verdict: Verdict,
-    val validationReportId: Id<ValidationReport>,
+    val efti: EftiSignatureStatus,
 )

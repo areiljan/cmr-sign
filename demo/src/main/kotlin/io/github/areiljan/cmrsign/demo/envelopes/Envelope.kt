@@ -9,6 +9,7 @@ import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
 import io.github.areiljan.cmrsign.demo.db.Entity
 import io.github.areiljan.cmrsign.efti.EftiDataElement
+import io.github.areiljan.cmrsign.efti.EftiSignatureType
 
 data class Envelope(
     val format: SignatureFormat,
@@ -36,5 +37,6 @@ data class ValidationReport(
     val envelopeId: Id<DomainEnvelope>,
     val documentVersion: Int,
     val content: String,
+    val eftiSignatureType: EftiSignatureType?,
     override val id: Id<ValidationReport> = Id('R'),
 ): Entity<ValidationReport>

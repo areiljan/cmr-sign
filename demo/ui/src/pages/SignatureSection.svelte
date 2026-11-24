@@ -21,5 +21,6 @@
     {#if signed.verdict.subIndication}
         <KeyValue label="Reason" value={signed.verdict.subIndication}/>
     {/if}
+    <KeyValue label="eFTI {signed.efti.dataElement}" value={signed.efti.atLeastAdvanced ? signed.efti.signatureType : 'not attested'}/>
     <KeyValue label="SHA-256" value={signed.sha256}/>
 </Section>

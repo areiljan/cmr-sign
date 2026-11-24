@@ -6,3 +6,6 @@ create table validationReports(
     content         text not null,
     ${createdAt}
 );
+
+--changeset validationReports.eftiSignatureType
+alter table validationReports add eftiSignatureType text;

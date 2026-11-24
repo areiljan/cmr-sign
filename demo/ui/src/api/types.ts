@@ -16,10 +16,10 @@ export interface SessionStarted {documentSha256: Sha256; documentVersion: number
 export interface SignRequest {documentSha256: Sha256}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.Signed
-export interface Signed {documentVersion: number; id: Id<Envelope>; sha256: Sha256; state: EnvelopeState; validationReportId: Id<ValidationReport>; verdict: any}
+export interface Signed {documentVersion: number; efti: any; id: Id<Envelope>; sha256: Sha256; state: EnvelopeState; verdict: any}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.ValidationReport
-export interface ValidationReport {content: string; documentVersion: number; envelopeId: Id<Envelope>; id: Id<ValidationReport>}
+export interface ValidationReport {content: string; documentVersion: number; eftiSignatureType?: EftiSignatureType; envelopeId: Id<Envelope>; id: Id<ValidationReport>}
 
 // class io.github.areiljan.cmrsign.MediaType
 export type MediaType = string
@@ -38,6 +38,9 @@ export enum SignerClass {REGISTERED = 'REGISTERED', AD_HOC = 'AD_HOC'}
 
 // class io.github.areiljan.cmrsign.EnvelopeState
 export enum EnvelopeState {CREATED = 'CREATED', IDENTITY_PROVEN = 'IDENTITY_PROVEN', SIGNED = 'SIGNED', VALIDATED = 'VALIDATED'}
+
+// class io.github.areiljan.cmrsign.efti.EftiSignatureType
+export enum EftiSignatureType {ADES = 'ADES', ADESEAL = 'ADESEAL'}
 
 // io.github.areiljan.cmrsign.Id
 export type Id<T> = string & {_of?: T}
