@@ -15,6 +15,7 @@ import io.github.areiljan.cmrsign.Verdict
 import io.github.areiljan.cmrsign.sign
 import io.github.areiljan.cmrsign.startSession
 import io.github.areiljan.cmrsign.validate
+import io.github.areiljan.cmrsign.efti.EftiDataElement
 import klite.HttpExchange
 import klite.NotFoundException
 import klite.NotModifiedException
@@ -33,7 +34,7 @@ class EnvelopeRoutes(
 ) {
     @POST
     fun create(body: EnvelopeCreationRequest): DomainEnvelope {
-        val envelope = Envelope(format = body.format, signerClass = body.signerClass)
+        val envelope = Envelope(format = body.format, signerClass = body.signerClass, eftiRole = body.eftiRole)
         envelopes.save(envelope)
 
         val payload = Base64.getDecoder().decode(body.payload)
@@ -117,6 +118,7 @@ data class EnvelopeCreationRequest(
     val contentType: MediaType,
     val format: SignatureFormat,
     val signerClass: SignerClass,
+    val eftiRole: EftiDataElement,
     val payload: String, // base64
 )
 

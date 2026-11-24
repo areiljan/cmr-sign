@@ -11,6 +11,7 @@ import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
+import io.github.areiljan.cmrsign.efti.EftiDataElement
 import io.github.areiljan.cmrsign.demo.db.BaseMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -40,12 +41,14 @@ class EnvelopeRoutesTest : BaseMocks() {
                 contentType = MediaType.PDF,
                 format = SignatureFormat.PADES,
                 signerClass = SignerClass.REGISTERED,
+                eftiRole = EftiDataElement.EFTI115_CARRIER,
                 payload = Base64.getEncoder().encodeToString(payload),
             )
         )
 
         expect(envelopeSlot.captured.toDomain()).toEqual(created)
         expect(envelopeSlot.captured.state).toEqual(EnvelopeState.CREATED)
+        expect(envelopeSlot.captured.eftiRole).toEqual(EftiDataElement.EFTI115_CARRIER)
 
         with(documentSlot.captured) {
             expect(envelopeId).toEqual(created.id)
@@ -94,7 +97,7 @@ class EnvelopeRoutesTest : BaseMocks() {
 
     @Test
     fun `session flow`() {
-        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED)
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER)
         every { envelopes.get(envelope.id) } returns envelope
         val document = Document(envelope.id, 1, MediaType.PDF, Sha256.of(unsignedPdf()), unsignedPdf())
         every { documents.by(Document::version to 1, Document::envelopeId to envelope.id) } returns document
@@ -117,7 +120,7 @@ class EnvelopeRoutesTest : BaseMocks() {
 
     @Test
     fun `sign flow`() {
-        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED)
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER)
         every { envelopes.get(envelope.id) } returns envelope
         val savedEnvelope = slot<Envelope>()
         every { envelopes.save(capture(savedEnvelope)) } returns 1

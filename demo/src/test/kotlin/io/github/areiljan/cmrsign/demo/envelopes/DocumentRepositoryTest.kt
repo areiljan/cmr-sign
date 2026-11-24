@@ -6,6 +6,7 @@ import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
+import io.github.areiljan.cmrsign.efti.EftiDataElement
 import io.github.areiljan.cmrsign.demo.db.DBTest
 import org.junit.jupiter.api.Test
 
@@ -15,7 +16,7 @@ class DocumentRepositoryTest : DBTest() {
 
     @Test
     fun `save and load`() {
-        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED)
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER)
         envelopes.save(envelope)
 
         val content = "a small cmr payload".toByteArray()

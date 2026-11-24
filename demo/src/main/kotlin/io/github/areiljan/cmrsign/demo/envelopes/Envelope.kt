@@ -8,10 +8,12 @@ import io.github.areiljan.cmrsign.Sha256
 import io.github.areiljan.cmrsign.SignatureFormat
 import io.github.areiljan.cmrsign.SignerClass
 import io.github.areiljan.cmrsign.demo.db.Entity
+import io.github.areiljan.cmrsign.efti.EftiDataElement
 
 data class Envelope(
     val format: SignatureFormat,
     val signerClass: SignerClass,
+    val eftiRole: EftiDataElement,
     val state: EnvelopeState = EnvelopeState.CREATED,
     val providerSessionId: String? = null,
     val signerSubject: String? = null,

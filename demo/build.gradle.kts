@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":pades"))
     implementation(project(":validation-cades"))
+    implementation(project(":efti"))
     implementation("org.bouncycastle:bcpkix-jdk18on:1.86")
 
     fun klite(module: String) = "com.github.keksworks.klite:klite-$module:2.0.7"

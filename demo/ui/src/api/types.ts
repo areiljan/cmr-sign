@@ -4,10 +4,10 @@
 export interface Document {content: Array<number>; contentType: MediaType; envelopeId: Id<Envelope>; id: Id<Document>; sha256: Sha256; version: number}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.Envelope
-export interface Envelope {format: SignatureFormat; id: Id<Envelope>; proofingMethod?: string; providerSessionId?: string; signerClass: SignerClass; signerSubject?: string; state: EnvelopeState}
+export interface Envelope {eftiRole: EftiDataElement; format: SignatureFormat; id: Id<Envelope>; proofingMethod?: string; providerSessionId?: string; signerClass: SignerClass; signerSubject?: string; state: EnvelopeState}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.EnvelopeCreationRequest
-export interface EnvelopeCreationRequest {contentType: MediaType; format: SignatureFormat; payload: string; signerClass: SignerClass}
+export interface EnvelopeCreationRequest {contentType: MediaType; eftiRole: EftiDataElement; format: SignatureFormat; payload: string; signerClass: SignerClass}
 
 // class io.github.areiljan.cmrsign.demo.envelopes.SessionStarted
 export interface SessionStarted {documentSha256: Sha256; documentVersion: number; id: Id<Envelope>; proofingMethod?: string; providerSessionId: string; signerSubject: string; state: EnvelopeState}
@@ -26,6 +26,9 @@ export type MediaType = string
 
 // class io.github.areiljan.cmrsign.Sha256
 export type Sha256 = string
+
+// class io.github.areiljan.cmrsign.efti.EftiDataElement
+export enum EftiDataElement {EFTI65_SENDER = 'EFTI65_SENDER', EFTI115_CARRIER = 'EFTI115_CARRIER', EFTI84_CONSIGNEE = 'EFTI84_CONSIGNEE'}
 
 // class io.github.areiljan.cmrsign.SignatureFormat
 export enum SignatureFormat {PADES = 'PADES'}

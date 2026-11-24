@@ -1,5 +1,5 @@
 import type {Envelope, SessionStarted, Signed} from './types'
-import {SignatureFormat, SignerClass} from './types'
+import {EftiDataElement, SignatureFormat, SignerClass} from './types'
 
 export const headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'} as HeadersInit
 
@@ -31,6 +31,7 @@ class Api {
             contentType: 'application/pdf',
             format: SignatureFormat.PADES,
             signerClass: SignerClass.REGISTERED,
+            eftiRole: EftiDataElement.EFTI65_SENDER,
             payload: await toBase64(file),
         })
     }
