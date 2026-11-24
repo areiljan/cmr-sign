@@ -31,6 +31,18 @@ class DssCmsValidatorTest {
         expect(verdict.signer.subjectName).toEqual(certificate.subjectX500Principal.name)
     }
 
+    @Test
+    fun `a tampered pdf fails with a hash failure`() {
+        val pdf = validSignedPdf()
+        pdf[String(pdf, Charsets.ISO_8859_1).indexOf("Skia")] = 'X'.code.toByte()
+
+        val verdict = PadesValidator(DssCmsValidator(listOf(signerCertificate())))
+            .validate(DocumentToValidate(pdf, MediaType.PDF))
+
+        expect(verdict.indication).toEqual(Indication.TOTAL_FAILED)
+        expect(verdict.subIndication).toEqual("HASH_FAILURE")
+    }
+
     private fun signerCertificate(): X509Certificate =
         resource("/signer-cert.pem").use {
             CertificateFactory.getInstance("X.509").generateCertificate(it) as X509Certificate
