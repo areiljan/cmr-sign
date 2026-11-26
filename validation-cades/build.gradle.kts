@@ -28,6 +28,7 @@ dependencies {
     implementation(dss("crl-parser-stream"))
 
     testImplementation(project(":pades"))
+    testImplementation(project(":efti"))
     testImplementation(project(":csc-provider"))
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.86")
     testImplementation("ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-2")

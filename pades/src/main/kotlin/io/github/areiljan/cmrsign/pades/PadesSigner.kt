@@ -115,6 +115,7 @@ class PadesSigner private constructor(
     }
 
     companion object {
+        @JvmStatic
         fun forProvider(provider: SigningProvider, session: String, identity: SignerIdentity): PadesSigner {
             require(identity.certificateChain.isNotEmpty()) { "signer identity must contain a certificate chain" }
             return PadesSigner(identity.certificateChain) { ProviderContentSigner(provider, session) }

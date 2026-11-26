@@ -16,6 +16,7 @@ class EftiSignatureStatus private constructor(
     val atLeastAdvanced: Boolean get() = signatureType != null
 
     companion object {
+        @JvmStatic
         fun from(dataElement: EftiDataElement, verdict: Verdict, validationReportId: String) = EftiSignatureStatus(
             dataElement,
             if (verdict.indication == Indication.TOTAL_PASSED) signatureTypeOf(verdict.qualification) else null,

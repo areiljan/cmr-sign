@@ -8,6 +8,7 @@ class Verdict private constructor(
     val report: String, // ETSI TS 119 102-2 validation report XML
 ) {
     companion object {
+        @JvmStatic
         fun from(
             indication: Indication,
             subIndication: String?, // the reason when indication is not TOTAL_PASSED
