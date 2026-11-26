@@ -22,3 +22,11 @@ dependencies {
 kotlin {
     jvmToolchain(21)
 }
+subprojects {
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
+            coreLibrariesVersion = "2.2.21"
+            compilerOptions.apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+        }
+    }
+}
