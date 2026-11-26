@@ -29,6 +29,11 @@ class PadesValidatorTest {
     }
 
     @Test
+    fun `validates pdf bytes directly so Java callers need no MediaType`() {
+        expect(validator.validate(signed)).toBeTheInstance(passed)
+    }
+
+    @Test
     fun `unsigned incremental update fails even when the cms passes`() {
         val updated = ByteArrayOutputStream()
         PDDocument.load(signed).use {

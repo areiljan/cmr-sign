@@ -9,16 +9,16 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.bouncycastle.asn1.ASN1InputStream
 
 class PadesValidator(private val cmsValidator: CmsValidator) : Validator {
-    override fun validate(document: DocumentToValidate): Verdict {
-        val pdf = document.bytes
-        return PDDocument.load(pdf).use {
+    override fun validate(document: DocumentToValidate): Verdict = validate(document.bytes)
+
+    fun validate(pdf: ByteArray): Verdict =
+        PDDocument.load(pdf).use {
             val signature = requireNotNull(it.lastSignatureDictionary) { "no signature in the document" }
             val cms = ASN1InputStream(signature.getContents(pdf)).use { asn1 -> asn1.readObject().encoded }
             val verdict = cmsValidator.validate(cms, signature.getSignedContent(pdf))
             if (coversWholeFile(pdf, signature.byteRange)) verdict
             else Verdict.from(Indication.TOTAL_FAILED, FORMAT_FAILURE, verdict.qualification, verdict.signer, verdict.report)
         }
-    }
 
     private fun coversWholeFile(pdf: ByteArray, byteRange: IntArray): Boolean {
         if (byteRange.size != 4) return false
