@@ -6,18 +6,24 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/cmr-sign.core.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/csc-provider/cmr-sign.csc-provider.iml" filepath="$PROJECT_DIR$/.idea/modules/csc-provider/cmr-sign.csc-provider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/csc-provider/cmr-sign.csc-provider.main.iml" filepath="$PROJECT_DIR$/.idea/modules/csc-provider/cmr-sign.csc-provider.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/csc-provider/cmr-sign.csc-provider.test.iml" filepath="$PROJECT_DIR$/.idea/modules/csc-provider/cmr-sign.csc-provider.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.main.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.test.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/cmr-sign.demo.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/efti/cmr-sign.efti.iml" filepath="$PROJECT_DIR$/.idea/modules/efti/cmr-sign.efti.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/efti/cmr-sign.efti.main.iml" filepath="$PROJECT_DIR$/.idea/modules/efti/cmr-sign.efti.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/efti/cmr-sign.efti.test.iml" filepath="$PROJECT_DIR$/.idea/modules/efti/cmr-sign.efti.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.iml" filepath="$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.main.iml" filepath="$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.test.iml" filepath="$PROJECT_DIR$/.idea/modules/pades/cmr-sign.pades.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/service/cmr-sign.service.iml" filepath="$PROJECT_DIR$/.idea/modules/service/cmr-sign.service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cmr-sign.test.iml" filepath="$PROJECT_DIR$/.idea/modules/cmr-sign.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.main.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.test.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-dss/cmr-sign.validation-dss.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-cades/cmr-sign.validation-cades.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-cades/cmr-sign.validation-cades.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-cades/cmr-sign.validation-cades.main.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-cades/cmr-sign.validation-cades.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validation-cades/cmr-sign.validation-cades.test.iml" filepath="$PROJECT_DIR$/.idea/modules/validation-cades/cmr-sign.validation-cades.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core.iml" filepath="$PROJECT_DIR$/.idea/modules/core.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core.test.iml" />

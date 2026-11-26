@@ -9,9 +9,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/csc-provider" />
             <option value="$PROJECT_DIR$/demo" />
+            <option value="$PROJECT_DIR$/efti" />
             <option value="$PROJECT_DIR$/pades" />
-            <option value="$PROJECT_DIR$/validation-dss" />
+            <option value="$PROJECT_DIR$/validation-cades" />
           </set>
         </option>
         <option name="myGradleHome" value="" />

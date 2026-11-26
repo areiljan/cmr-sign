@@ -4,9 +4,6 @@ plugins {
     `maven-publish`
 }
 
-group = "io.github.areiljan"
-version = "1.0-SNAPSHOT"
-
 repositories { mavenCentral() }
 
 kotlin {
