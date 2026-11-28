@@ -13,3 +13,6 @@ create table envelopes(
 --changeset envelopes.eftiRole
 alter table envelopes add eftiRole text not null default 'EFTI65_SENDER';
 alter table envelopes alter eftiRole drop default;
+
+--changeset envelopes.signerName
+alter table envelopes add signerName text;

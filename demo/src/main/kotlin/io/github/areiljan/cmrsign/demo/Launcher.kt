@@ -27,7 +27,7 @@ fun main() {
     Server().apply {
         val signingProvider = ReferenceSigningProvider()
         register<SigningProvider>(signingProvider)
-        register<Validator>(PadesValidator(DssCmsValidator(listOf(signingProvider.certificate))))
+        register<Validator>(PadesValidator(DssCmsValidator(signingProvider.trustAnchors)))
         initDB()
         use<RequestTransactionHandler>()
         use<JsonBody>()

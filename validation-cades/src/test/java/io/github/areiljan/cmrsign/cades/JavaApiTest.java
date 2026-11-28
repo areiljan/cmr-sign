@@ -2,8 +2,11 @@ package io.github.areiljan.cmrsign.cades;
 
 import io.github.areiljan.cmrsign.Indication;
 import io.github.areiljan.cmrsign.PadesMocksKt;
+import io.github.areiljan.cmrsign.ProviderSession;
 import io.github.areiljan.cmrsign.Qualification;
+import io.github.areiljan.cmrsign.SessionStatus;
 import io.github.areiljan.cmrsign.SignerIdentity;
+import io.github.areiljan.cmrsign.SignerKind;
 import io.github.areiljan.cmrsign.SigningProvider;
 import io.github.areiljan.cmrsign.Verdict;
 import io.github.areiljan.cmrsign.efti.EftiDataElement;
@@ -26,7 +29,7 @@ class JavaApiTest {
     @Test
     void signsValidatesAndDerivesTheEftiStatusFromJava() {
         var provider = new KeyPairProvider();
-        var session = provider.startSession("Java signer");
+        var session = provider.startSession("Java signer").getId();
         var identity = provider.completeSession(session);
 
         var signed = PadesSigner.forProvider(provider, session, identity).sign(PadesMocksKt.unsignedPdf(), "Java signer");
@@ -43,12 +46,23 @@ class JavaApiTest {
 
         assertEquals("CN=Java", verdict.getSigner().getSubjectName());
         assertTrue(verdict.getSigner().getCertificateChain().isEmpty());
+        assertEquals(SignerKind.PERSON, verdict.getSigner().getKind());
+    }
+
+    @Test
+    void aJavaProviderWithoutActivationRejectsActivationCodes() {
+        assertThrows(UnsupportedOperationException.class, () -> new KeyPairProvider().authorize("session", "123456"));
     }
 
     private class KeyPairProvider implements SigningProvider {
         @Override
-        public String startSession(String signer) {
-            return "session";
+        public ProviderSession startSession(String signer) {
+            return new ProviderSession("session", SessionStatus.AUTHORIZED);
+        }
+
+        @Override
+        public ProviderSession session(String session) {
+            return new ProviderSession(session, SessionStatus.AUTHORIZED);
         }
 
         @Override

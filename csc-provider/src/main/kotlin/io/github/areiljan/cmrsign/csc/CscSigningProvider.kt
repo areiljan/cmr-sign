@@ -1,6 +1,10 @@
 package io.github.areiljan.cmrsign.csc
 
+import io.github.areiljan.cmrsign.Activation
+import io.github.areiljan.cmrsign.ProviderSession
+import io.github.areiljan.cmrsign.SessionStatus
 import io.github.areiljan.cmrsign.SignerIdentity
+import io.github.areiljan.cmrsign.SignerKind
 import io.github.areiljan.cmrsign.SigningProvider
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,44 +19,86 @@ import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.security.MessageDigest
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
 import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [SigningProvider] backed by a Cloud Signature Consortium (CSC) API v1 server.
+ *
+ * Credentials with `authMode: implicit` are authorized when the session starts. Credentials with
+ * `authMode: explicit` and an OTP start [SessionStatus.PENDING]; an online OTP is requested from the
+ * provider with `credentials/sendOTP`. The OTP is held in memory until the one hash it authorizes is
+ * signed. PIN-protected and `oauth2code` credentials are rejected rather than half supported.
  */
-class CscSigningProvider(
+class CscSigningProvider @JvmOverloads constructor(
     private val baseUrl: String,
     private val tokenUrl: String,
     private val clientId: String,
     private val username: String,
     private val password: String,
     private val credentialId: String,
+    private val kind: SignerKind = SignerKind.PERSON,
+    private val sessionTtl: Duration = Duration.ofMinutes(5),
+    private val clock: Clock = Clock.systemUTC(),
 ) : SigningProvider {
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true; explicitNulls = false }
     private val http = HttpClient.newHttpClient()
     private val certificateFactory = CertificateFactory.getInstance("X.509")
-    private val sessions = ConcurrentHashMap.newKeySet<String>()
-    private val identities = ConcurrentHashMap<String, SignerIdentity>()
+    private val sessions = ConcurrentHashMap<String, Session>()
 
-    override fun startSession(signer: String): String {
+    override fun startSession(signer: String): ProviderSession {
         require(signer.isNotBlank()) { "signer must not be blank" }
-        return UUID.randomUUID().toString().also { sessions.add(it) }
+        val token = token()
+        val info = json.decodeFromString<CredentialsInfoResponse>(
+            post("/credentials/info", json.encodeToString(CredentialsInfoRequest(credentialId)), token),
+        )
+        val activation = activationFor(info)
+        if (activation == Activation.OTP && info.OTP?.type == "online") {
+            post("/credentials/sendOTP", json.encodeToString(SendOtpRequest(credentialId)), token)
+        }
+        val session = Session(
+            id = UUID.randomUUID().toString(),
+            identity = signerIdentity(info),
+            activation = activation,
+            expiresAt = clock.instant().plus(sessionTtl),
+            status = if (activation == Activation.NONE) SessionStatus.AUTHORIZED else SessionStatus.PENDING,
+        )
+        sessions[session.id] = session
+        return session.view()
     }
 
-    override fun completeSession(session: String): SignerIdentity {
-        require(sessions.contains(session)) { "unknown session: $session" }
-        return identities.computeIfAbsent(session) { signerIdentity(token()) }
+    override fun session(session: String): ProviderSession = known(session).view()
+
+    override fun authorize(session: String, activationCode: String): ProviderSession {
+        require(activationCode.isNotBlank()) { "activation code must not be blank" }
+        val current = known(session)
+        synchronized(current) {
+            check(current.status() == SessionStatus.PENDING) { "session is ${current.status()}, not PENDING" }
+            current.otp = activationCode
+            current.status = SessionStatus.AUTHORIZED
+        }
+        return current.view()
     }
+
+    override fun completeSession(session: String): SignerIdentity = authorized(session).identity
 
     override fun sign(session: String, dataToSign: ByteArray): ByteArray {
-        require(sessions.contains(session)) { "unknown session: $session" }
+        val current = authorized(session)
         val token = token()
         val hash = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(dataToSign))
-        val sad = json.decodeFromString<AuthorizeResponse>(
-            post("/credentials/authorize", json.encodeToString(AuthorizeRequest(credentialId, listOf(hash))), token),
-        ).SAD
+        val otp = synchronized(current) { current.otp.also { current.otp = null } }
+        val sad = try {
+            json.decodeFromString<AuthorizeResponse>(
+                post("/credentials/authorize", json.encodeToString(AuthorizeRequest(credentialId, listOf(hash), OTP = otp)), token),
+            ).SAD
+        } catch (e: IOException) {
+            current.status = SessionStatus.FAILED
+            throw e
+        }
         val response = json.decodeFromString<SignHashResponse>(
             post("/signatures/signHash", json.encodeToString(SignHashRequest(credentialId, sad, listOf(hash))), token),
         )
@@ -60,17 +106,31 @@ class CscSigningProvider(
         return Base64.getDecoder().decode(response.signatures.first())
     }
 
-    private fun signerIdentity(token: String): SignerIdentity {
-        val info = json.decodeFromString<CredentialsInfoResponse>(
-            post("/credentials/info", json.encodeToString(CredentialsInfoRequest(credentialId)), token),
-        )
+    private fun activationFor(info: CredentialsInfoResponse): Activation = when (info.authMode ?: "implicit") {
+        "implicit" -> Activation.NONE
+        "explicit" -> {
+            if (info.PIN?.presence == "true") throw UnsupportedOperationException("PIN-protected CSC credentials are not supported")
+            if (info.OTP?.presence == "true") Activation.OTP else Activation.NONE
+        }
+        else -> throw UnsupportedOperationException("CSC authMode ${info.authMode} is not supported")
+    }
+
+    private fun known(session: String) = requireNotNull(sessions[session]) { "unknown session: $session" }
+
+    private fun authorized(session: String) = known(session).also {
+        check(it.status() == SessionStatus.AUTHORIZED) { "session is ${it.status()}, not AUTHORIZED" }
+    }
+
+    private fun signerIdentity(info: CredentialsInfoResponse): SignerIdentity {
         val certificates = info.cert.certificates.map { encoded ->
             certificateFactory.generateCertificate(Base64.getDecoder().decode(encoded).inputStream()) as X509Certificate
         }
+        require(certificates.isNotEmpty()) { "CSC credential has no certificate" }
         return SignerIdentity(
             subjectName = certificates.first().subjectX500Principal.name,
             certificateChain = certificates,
             proofingMethod = "csc",
+            kind = kind,
         )
     }
 
@@ -100,6 +160,19 @@ class CscSigningProvider(
         }
         return response.body()
     }
+
+    private inner class Session(
+        val id: String,
+        val identity: SignerIdentity,
+        val activation: Activation,
+        val expiresAt: Instant,
+        @Volatile var status: SessionStatus,
+        @Volatile var otp: String? = null,
+    ) {
+        fun status() = if (status != SessionStatus.FAILED && !clock.instant().isBefore(expiresAt)) SessionStatus.EXPIRED else status
+
+        fun view() = ProviderSession(id, status(), activation, expiresAt)
+    }
 }
 
 @Serializable
@@ -112,16 +185,28 @@ private data class CredentialsInfoRequest(
 )
 
 @Serializable
-private data class CredentialsInfoResponse(val cert: CertificateInfo)
+private data class CredentialsInfoResponse(
+    val cert: CertificateInfo,
+    val authMode: String? = null,
+    val PIN: Presence? = null,
+    val OTP: Presence? = null,
+)
+
+@Serializable
+private data class Presence(val presence: String? = null, val type: String? = null)
 
 @Serializable
 private data class CertificateInfo(val certificates: List<String>)
+
+@Serializable
+private data class SendOtpRequest(val credentialID: String)
 
 @Serializable
 private data class AuthorizeRequest(
     val credentialID: String,
     val hash: List<String>,
     val numSignatures: Int = 1,
+    val OTP: String? = null,
 )
 
 @Serializable

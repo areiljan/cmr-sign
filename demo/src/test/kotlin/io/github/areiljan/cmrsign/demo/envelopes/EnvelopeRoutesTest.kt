@@ -3,6 +3,7 @@ package io.github.areiljan.cmrsign.demo.envelopes
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import io.github.areiljan.cmrsign.Activation
 import io.github.areiljan.cmrsign.Envelope as DomainEnvelope
 import io.github.areiljan.cmrsign.EnvelopeState
 import io.github.areiljan.cmrsign.Id
@@ -97,7 +98,7 @@ class EnvelopeRoutesTest : BaseMocks() {
 
     @Test
     fun `session flow`() {
-        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER)
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER, signerName = "Mari Maasikas")
         every { envelopes.get(envelope.id) } returns envelope
         val document = Document(envelope.id, 1, MediaType.PDF, Sha256.of(unsignedPdf()), unsignedPdf())
         every { documents.by(Document::version to 1, Document::envelopeId to envelope.id) } returns document
@@ -107,15 +108,29 @@ class EnvelopeRoutesTest : BaseMocks() {
         val started = routes.start(envelope.id)
 
         expect(started.state).toEqual(EnvelopeState.IDENTITY_PROVEN)
+        expect(started.activation).toEqual(Activation.NONE)
         expect(started.providerSessionId.isNotBlank()).toEqual(true)
-        expect(started.signerSubject).toEqual(signingProvider.certificate.subjectX500Principal.name)
+        expect(started.signerSubject).toEqual("CN=Mari Maasikas")
         expect(started.proofingMethod).toEqual("reference-provider")
         expect(started.documentVersion).toEqual(1)
         expect(started.documentSha256).toEqual(document.sha256)
         expect(saved.captured.state).toEqual(EnvelopeState.IDENTITY_PROVEN)
         expect(saved.captured.providerSessionId).toEqual(started.providerSessionId)
-        expect(saved.captured.signerSubject).toEqual(signingProvider.certificate.subjectX500Principal.name)
+        expect(saved.captured.signerSubject).toEqual("CN=Mari Maasikas")
         expect(saved.captured.proofingMethod).toEqual("reference-provider")
+    }
+
+    @Test
+    fun `an ad hoc envelope needs a signer name and cannot be started by the platform`() {
+        expect {
+            routes.create(EnvelopeCreationRequest(MediaType.PDF, SignatureFormat.PADES, SignerClass.AD_HOC, EftiDataElement.EFTI84_CONSIGNEE, "AA==", signerName = " "))
+        }.toThrow<IllegalArgumentException>()
+
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.AD_HOC, EftiDataElement.EFTI84_CONSIGNEE, signerName = "Mari Maasikas")
+        every { envelopes.get(envelope.id) } returns envelope
+
+        expect { routes.start(envelope.id) }.toThrow<IllegalArgumentException>()
+        expect { routes.sign(envelope.id, SignRequest(Sha256.of(byteArrayOf()))) }.toThrow<IllegalArgumentException>()
     }
 
     @Test

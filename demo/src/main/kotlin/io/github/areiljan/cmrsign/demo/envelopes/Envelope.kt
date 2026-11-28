@@ -15,6 +15,7 @@ data class Envelope(
     val format: SignatureFormat,
     val signerClass: SignerClass,
     val eftiRole: EftiDataElement,
+    val signerName: String? = null,
     val state: EnvelopeState = EnvelopeState.CREATED,
     val providerSessionId: String? = null,
     val signerSubject: String? = null,
