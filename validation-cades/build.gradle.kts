@@ -30,6 +30,7 @@ dependencies {
 
     testImplementation(project(":pades"))
     testImplementation(project(":efti"))
+    testImplementation("org.apache.pdfbox:pdfbox:2.0.37")
     testImplementation(project(":csc-provider"))
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.86")
     testImplementation("ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-2")
