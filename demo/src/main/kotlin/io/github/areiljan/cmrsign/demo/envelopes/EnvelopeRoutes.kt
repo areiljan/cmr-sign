@@ -1,6 +1,7 @@
 package io.github.areiljan.cmrsign.demo.envelopes
 
 import io.github.areiljan.cmrsign.Envelope as DomainEnvelope
+import io.github.areiljan.cmrsign.EnvelopeState
 import io.github.areiljan.cmrsign.Id
 import io.github.areiljan.cmrsign.MediaType
 import io.github.areiljan.cmrsign.Sha256
@@ -14,12 +15,15 @@ import klite.StatusCode.Companion.OK
 import klite.annotations.GET
 import klite.annotations.POST
 import klite.annotations.PathParam
+import java.time.Duration
+import java.time.Instant
 import java.util.Base64
 
 class EnvelopeRoutes(
     private val envelopes: EnvelopeRepository,
     private val documents: DocumentRepository,
     private val reports: ValidationReportRepository,
+    private val links: SigningLinkRepository,
     private val signing: SigningService,
 ) {
     @POST
@@ -66,6 +70,19 @@ class EnvelopeRoutes(
         return signing.sign(envelope, body.documentSha256)
     }
 
+    @POST("/:id/links")
+    fun createLink(@PathParam id: Id<DomainEnvelope>, body: LinkRequest): LinkIssued {
+        val envelope = envelopes.get(id)
+        require(envelope.signerClass == SignerClass.AD_HOC) { "only ad hoc envelopes get signing links" }
+        check(envelope.state == EnvelopeState.CREATED) { "envelope is already ${envelope.state}" }
+        require(body.ttlMinutes in 1..MAX_LINK_MINUTES) { "ttlMinutes must be between 1 and $MAX_LINK_MINUTES" }
+        val token = SigningLinks.newToken()
+        val otp = SigningLinks.newOtp()
+        val link = SigningLink(id, Sha256.of(token.toByteArray()), Sha256.of(otp.toByteArray()), Instant.now().plus(Duration.ofMinutes(body.ttlMinutes)))
+        links.save(link)
+        return LinkIssued(id, token, otp, "/sign/$token", link.expiresAt)
+    }
+
     @GET("/:id/documents/:version")
     fun download(exchange: HttpExchange, @PathParam id: Id<DomainEnvelope>, @PathParam version: Int) {
         val document = documents.by(Document::version to version, Document::envelopeId to id) ?: throw NotFoundException("no document $version for $id")
@@ -77,6 +94,10 @@ class EnvelopeRoutes(
         val report = reports.get(reportId)
         if (report.envelopeId != id) throw NotFoundException("no report $reportId for $id")
         exchange.send(OK, report.content, "application/xml")
+    }
+
+    private companion object {
+        const val MAX_LINK_MINUTES = 7L * 24 * 60
     }
 }
 
@@ -99,3 +120,13 @@ data class EnvelopeCreationRequest(
 data class AuthorizeRequest(val activationCode: String)
 
 data class SignRequest(val documentSha256: Sha256)
+
+data class LinkRequest(val ttlMinutes: Long = 15)
+
+data class LinkIssued(
+    val id: Id<DomainEnvelope>,
+    val token: String,
+    val otp: String,
+    val path: String,
+    val expiresAt: Instant,
+)

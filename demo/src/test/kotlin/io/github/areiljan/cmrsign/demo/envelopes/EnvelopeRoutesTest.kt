@@ -134,6 +134,30 @@ class EnvelopeRoutesTest : BaseMocks() {
     }
 
     @Test
+    fun `issues a single-use link with a one-time code for an ad hoc envelope`() {
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.AD_HOC, EftiDataElement.EFTI84_CONSIGNEE, signerName = "Mari Maasikas")
+        every { envelopes.get(envelope.id) } returns envelope
+        val saved = slot<SigningLink>()
+        every { links.save(capture(saved)) } returns 1
+
+        val issued = routes.createLink(envelope.id, LinkRequest(ttlMinutes = 10))
+
+        expect(issued.otp.length).toEqual(6)
+        expect(issued.path).toEqual("/sign/${issued.token}")
+        expect(saved.captured.tokenHash).toEqual(Sha256.of(issued.token.toByteArray()))
+        expect(saved.captured.otpHash).toEqual(Sha256.of(issued.otp.toByteArray()))
+        expect(saved.captured.expiresAt).toEqual(issued.expiresAt)
+    }
+
+    @Test
+    fun `does not issue links for registered envelopes`() {
+        val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER)
+        every { envelopes.get(envelope.id) } returns envelope
+
+        expect { routes.createLink(envelope.id, LinkRequest()) }.toThrow<IllegalArgumentException>()
+    }
+
+    @Test
     fun `sign flow`() {
         val envelope = Envelope(SignatureFormat.PADES, SignerClass.REGISTERED, EftiDataElement.EFTI65_SENDER)
         every { envelopes.get(envelope.id) } returns envelope

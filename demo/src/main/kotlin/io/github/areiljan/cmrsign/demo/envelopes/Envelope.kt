@@ -10,6 +10,7 @@ import io.github.areiljan.cmrsign.SignerClass
 import io.github.areiljan.cmrsign.demo.db.Entity
 import io.github.areiljan.cmrsign.efti.EftiDataElement
 import io.github.areiljan.cmrsign.efti.EftiSignatureType
+import java.time.Instant
 
 data class Envelope(
     val format: SignatureFormat,
@@ -41,3 +42,14 @@ data class ValidationReport(
     val eftiSignatureType: EftiSignatureType?,
     override val id: Id<ValidationReport> = Id('R'),
 ): Entity<ValidationReport>
+
+data class SigningLink(
+    val envelopeId: Id<DomainEnvelope>,
+    val tokenHash: Sha256,
+    val otpHash: Sha256,
+    val expiresAt: Instant,
+    val failedAttempts: Int = 0,
+    val verifiedAt: Instant? = null,
+    val usedAt: Instant? = null,
+    override val id: Id<SigningLink> = Id('L'),
+): Entity<SigningLink>

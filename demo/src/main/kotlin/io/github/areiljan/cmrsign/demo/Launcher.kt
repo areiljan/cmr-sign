@@ -6,6 +6,7 @@ import io.github.areiljan.cmrsign.cades.DssCmsValidator
 import io.github.areiljan.cmrsign.pades.PadesValidator
 import io.github.areiljan.cmrsign.demo.db.initDB
 import io.github.areiljan.cmrsign.demo.envelopes.EnvelopeRoutes
+import io.github.areiljan.cmrsign.demo.envelopes.LinkRoutes
 import io.github.areiljan.cmrsign.demo.reference.ReferenceSigningProvider
 import io.github.areiljan.cmrsign.demo.security.PlatformKeyGuard
 import klite.AssetsHandler
@@ -39,6 +40,10 @@ fun main() {
             useOnly<JsonBody>()
             before(PlatformKeyGuard(platformKey))
             annotated<EnvelopeRoutes>("/envelopes")
+        }
+        context("/api/links") {
+            useOnly<JsonBody>()
+            annotated<LinkRoutes>()
         }
 
         start()

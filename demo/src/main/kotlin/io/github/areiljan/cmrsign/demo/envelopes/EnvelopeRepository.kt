@@ -20,6 +20,8 @@ class EnvelopeRepository(db: DataSource): CrudRepository<Envelope, DomainEnvelop
 
 class DocumentRepository(db: DataSource): CrudRepository<Document, Document>(db, "documents")
 
+class SigningLinkRepository(db: DataSource): CrudRepository<SigningLink, SigningLink>(db, "signingLinks")
+
 class ValidationReportRepository(db: DataSource): CrudRepository<ValidationReport, ValidationReport>(db, "validationReports")
 
 private val EnvelopeState.dbValue get() = name
