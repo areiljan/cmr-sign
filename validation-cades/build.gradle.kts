@@ -26,6 +26,7 @@ dependencies {
     implementation(dss("utils-apache-commons"))
     implementation(dss("service"))
     implementation(dss("crl-parser-stream"))
+    implementation(dss("tsl-validation"))
 
     testImplementation(project(":pades"))
     testImplementation(project(":efti"))

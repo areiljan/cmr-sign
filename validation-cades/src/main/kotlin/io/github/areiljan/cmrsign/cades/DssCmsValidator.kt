@@ -4,9 +4,10 @@ import eu.europa.esig.dss.enumerations.Indication as DssIndication
 import eu.europa.esig.dss.enumerations.SignatureQualification as DssQualification
 import eu.europa.esig.dss.model.InMemoryDocument
 import eu.europa.esig.dss.model.x509.CertificateToken
-import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier
 import eu.europa.esig.dss.service.crl.OnlineCRLSource
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource
+import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier
+import eu.europa.esig.dss.spi.x509.CertificateSource
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource
 import eu.europa.esig.dss.validation.SignedDocumentValidator
 import eu.europa.esig.dss.validation.reports.Reports
@@ -21,49 +22,52 @@ class DssCmsValidator(
     private val trustedCertificates: List<X509Certificate>,
 ) : CmsValidator {
     override fun validate(cms: ByteArray, signedContent: ByteArray): Verdict {
-        val validator = SignedDocumentValidator.fromDocument(InMemoryDocument(cms))
-        validator.setDetachedContents(listOf(InMemoryDocument(signedContent)))
         val trusted = CommonTrustedCertificateSource().apply {
             trustedCertificates.forEach { addCertificate(CertificateToken(it)) }
         }
-        validator.setCertificateVerifier(
-            CommonCertificateVerifier().apply {
-                setTrustedCertSources(trusted)
-                ocspSource = OnlineOCSPSource()
-                crlSource = OnlineCRLSource()
-            },
-        )
+        return validateCms(trusted, cms, signedContent)
+    }
+}
 
-        val reports = validator.validateDocument()
-        val simple = reports.simpleReport
-        val id = requireNotNull(simple.firstSignatureId) { "no signature found in the CMS" }
+internal fun validateCms(trustSource: CertificateSource, cms: ByteArray, signedContent: ByteArray): Verdict {
+    val validator = SignedDocumentValidator.fromDocument(InMemoryDocument(cms))
+    validator.setDetachedContents(listOf(InMemoryDocument(signedContent)))
+    validator.setCertificateVerifier(
+        CommonCertificateVerifier().apply {
+            setTrustedCertSources(trustSource)
+            ocspSource = OnlineOCSPSource()
+            crlSource = OnlineCRLSource()
+        },
+    )
 
-        return Verdict.from(
-            indication = indicationOf(simple.getIndication(id)),
-            subIndication = simple.getSubIndication(id)?.name,
-            qualification = qualificationOf(simple.getSignatureQualification(id)),
-            signer = signerIdentity(reports, id),
-            report = reports.xmlValidationReport,
-        )
+    val reports = validator.validateDocument()
+    val simple = reports.simpleReport
+    val id = requireNotNull(simple.firstSignatureId) { "no signature found in the CMS" }
+
+    return Verdict.from(
+        indication = indicationOf(simple.getIndication(id)),
+        subIndication = simple.getSubIndication(id)?.name,
+        qualification = qualificationOf(simple.getSignatureQualification(id)),
+        signer = signerIdentity(reports, id),
+        report = reports.xmlValidationReport,
+    )
+}
+
+private fun signerIdentity(reports: Reports, signatureId: String): SignerIdentity {
+    val certificateId = reports.simpleReport.getCertificateChain(signatureId)
+        ?.certificate?.firstOrNull()?.id
+    val certificate = requireNotNull(certificateId?.let { reports.diagnosticData.getCertificateById(it) }) {
+        "no signing certificate reported for signature $signatureId"
     }
 
-    private fun signerIdentity(reports: Reports, signatureId: String): SignerIdentity {
-        val certificateId = reports.simpleReport.getCertificateChain(signatureId)
-            ?.certificate?.firstOrNull()?.id
-        val certificate = requireNotNull(certificateId?.let { reports.diagnosticData.getCertificateById(it) }) {
-            "no signing certificate reported for signature $signatureId"
-        }
+    return SignerIdentity(subjectName = certificate.certificateDN)
+}
 
-        return SignerIdentity(subjectName = certificate.certificateDN)
-    }
-
-    private fun indicationOf(dss: DssIndication): Indication = when (dss) {
-        DssIndication.TOTAL_PASSED -> Indication.TOTAL_PASSED
-        DssIndication.TOTAL_FAILED -> Indication.TOTAL_FAILED
-        DssIndication.INDETERMINATE -> Indication.INDETERMINATE
-        else -> throw UnsupportedOperationException("unsupported DSS indication: $dss")
-    }
-
+private fun indicationOf(dss: DssIndication): Indication = when (dss) {
+    DssIndication.TOTAL_PASSED -> Indication.TOTAL_PASSED
+    DssIndication.TOTAL_FAILED -> Indication.TOTAL_FAILED
+    DssIndication.INDETERMINATE -> Indication.INDETERMINATE
+    else -> throw UnsupportedOperationException("unsupported DSS indication: $dss")
 }
 
 internal fun qualificationOf(dss: DssQualification?): Qualification = when (dss) {
