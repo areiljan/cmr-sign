@@ -11,6 +11,14 @@ describe('App', () => {
     expect(container.textContent).toContain('CMR Sign Test Service')
   })
 
+  it('renders the ad hoc signing page for a signing link', () => {
+    activePath.set('/sign/some-token')
+
+    const {container} = render(App)
+
+    expect(container.textContent).toContain('Sign a consignment note')
+  })
+
   it('renders the not found page for an unknown path', () => {
     activePath.set('/unknown')
 

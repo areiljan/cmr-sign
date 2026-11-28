@@ -1,4 +1,4 @@
-import type {Envelope, SessionStarted, Signed} from './types'
+import type {Envelope, LinkIssued, LinkView, SessionStarted, Signed} from './types'
 import {EftiDataElement, SignatureFormat, SignerClass} from './types'
 
 export const headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'} as HeadersInit
@@ -26,14 +26,39 @@ class Api {
         return await this.request(path, {method: 'POST', body}) as T
     }
 
-    async createEnvelope(file: File): Promise<Envelope> {
+    async createEnvelope(file: File, signerClass = SignerClass.REGISTERED, signerName?: string, eftiRole = EftiDataElement.EFTI65_SENDER): Promise<Envelope> {
         return this.post('envelopes', {
             contentType: 'application/pdf',
             format: SignatureFormat.PADES,
-            signerClass: SignerClass.REGISTERED,
-            eftiRole: EftiDataElement.EFTI65_SENDER,
+            signerClass,
+            eftiRole,
+            signerName: signerName || undefined,
             payload: await toBase64(file),
         })
+    }
+
+    authorizeSession(id: string, activationCode: string): Promise<SessionStarted> {
+        return this.post(`envelopes/${id}/authorize`, {activationCode})
+    }
+
+    createLink(id: string, ttlMinutes = 15): Promise<LinkIssued> {
+        return this.post(`envelopes/${id}/links`, {ttlMinutes})
+    }
+
+    link(token: string): Promise<LinkView> {
+        return this.get(`links/${token}`)
+    }
+
+    verifyLink(token: string, otp: string): Promise<SessionStarted> {
+        return this.post(`links/${token}/verify`, {otp})
+    }
+
+    authorizeLink(token: string, activationCode: string): Promise<SessionStarted> {
+        return this.post(`links/${token}/authorize`, {activationCode})
+    }
+
+    signLink(token: string, documentSha256: string): Promise<Signed> {
+        return this.post(`links/${token}/sign`, {documentSha256})
     }
 
     startSession(id: string): Promise<SessionStarted> {
